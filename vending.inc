@@ -32,7 +32,7 @@
 		Y_Less - ALS Hooking method
 
 	Version:
-		0.1
+		0.2
 */
 
 //------------------------------------------------------------------------------
@@ -226,6 +226,21 @@ stock GetMachineObjectID(machineid)
 
 //------------------------------------------------------------------------------
 
+GetXYInFrontOfVending(machineid, &Float:x, &Float:y, Float:distance)
+{
+	new Float:a, Float:z;
+	GetMachineRot(machineid, x, y, a);
+	GetMachinePos(machineid, x, y, z);
+
+	a += 180.0;
+	if(a > 359.0) a -= 359.0;
+
+	x += (distance * floatsin(-a, degrees));
+	y += (distance * floatcos(-a, degrees));
+}
+
+//------------------------------------------------------------------------------
+
 public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 {
 	if(newkeys & KEY_SECONDARY_ATTACK && GetPlayerAnimationIndex(playerid) != 1660)
@@ -235,10 +250,12 @@ public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 			if(!IsValidMachine(i))
 				continue;
 
-			if(!IsPlayerInRangeOfPoint(playerid, g_eVendingData[i][E_VENDING_RADIUS], g_eVendingData[i][E_VENDING_X], g_eVendingData[i][E_VENDING_Y], g_eVendingData[i][E_VENDING_Z]))
+			new Float:x, Float:y;
+			GetXYInFrontOfVending(i, x, y, 0.5);
+			if(!IsPlayerInRangeOfPoint(playerid, g_eVendingData[i][E_VENDING_RADIUS], x, y, g_eVendingData[i][E_VENDING_Z]))
 				continue;
 
-			//SetPlayerFacingAngle(playerid, g_eVendingData[i][E_VENDING_RZ]);
+			SetPlayerFacingAngle(playerid, g_eVendingData[i][E_VENDING_RZ]);
 			ApplyAnimation(playerid, "VENDING", "VEND_USE", 10.0, 0, 0, 0, 0, 0, 1);
 			OnPlayerUseVendingMachine(playerid, i);
 		}
