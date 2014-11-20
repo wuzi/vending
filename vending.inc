@@ -32,7 +32,7 @@
 		Y_Less - ALS Hooking method
 
 	Version:
-		0.2
+		0.2.5
 */
 
 //------------------------------------------------------------------------------
@@ -68,6 +68,7 @@ native SetMachineRot(machineid, Float:rx, Float:ry, Float:rz);
 native GetMachinePos(machineid, &Float:x, &Float:y, &Float:z);
 native SetMachinePos(machineid, Float:x, Float:y, Float:z);
 native DestroyMachine(machineid);
+native GetMachineType(machineid);
 native IsValidMachine(machineid);*/
 
 //------------------------------------------------------------------------------
@@ -81,6 +82,7 @@ enum E_VENDING_DATA
 	Float:E_VENDING_RY,
 	Float:E_VENDING_RZ,
 	Float:E_VENDING_RADIUS,
+	E_VENDING_TYPE,
 	E_VENDING_ID
 }
 static g_eVendingData[MAX_MACHINES][E_VENDING_DATA];
@@ -125,6 +127,8 @@ stock CreateMachine(objectid, Float:x, Float:y, Float:z, Float:rx, Float:ry, Flo
 	g_eVendingData[machineid][E_VENDING_RX]	= rx;
 	g_eVendingData[machineid][E_VENDING_RY]	= ry;
 	g_eVendingData[machineid][E_VENDING_RZ]	= rz;
+
+	g_eVendingData[machineid][E_VENDING_TYPE] = objectid;
 	return machineid;
 }
 
@@ -146,6 +150,8 @@ stock DestroyMachine(machineid)
 	g_eVendingData[machineid][E_VENDING_RX] = 0.0;
 	g_eVendingData[machineid][E_VENDING_RY] = 0.0;
 	g_eVendingData[machineid][E_VENDING_RZ] = 0.0;
+
+	g_eVendingData[machineid][E_VENDING_TYPE] = 0;
     return 1;
 }
 
@@ -153,6 +159,11 @@ stock DestroyMachine(machineid)
 
 stock IsValidMachine(machineid)
 	return !(g_eVendingData[machineid][E_VENDING_X] == 0.0 && g_eVendingData[machineid][E_VENDING_Y] == 0.0);
+
+//------------------------------------------------------------------------------
+
+stock GetMachineType(machineid)
+	return g_eVendingData[machineid][E_VENDING_TYPE];
 
 //------------------------------------------------------------------------------
 
