@@ -1,10 +1,10 @@
 //------------------------------------------------------------------------------
 
 /*
-	SA-MP Vending Machine include
+	SA-MP vending machine creator
 	
 	Description:
-		This include provide code to create server-side vending machines in SA-MP.
+		This filterscript provide code to create and save vending machine in game.
 
 	License:
 		The MIT License (MIT)
@@ -12,7 +12,7 @@
 		Permission is hereby granted, free of charge, to any person obtaining a copy
 		of this software and associated documentation files (the "Software"), to deal
 		in the Software without restriction, including without limitation the rights
-		to use, copy, modiY, merge, publish, distribute, sublicense, and/or sell
+		to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 		copies of the Software, and to permit persons to whom the Software is
 		furnished to do so, subject to the following conditions:
 		The above copyright notice and this permission notice shall be included in all
@@ -29,222 +29,464 @@
 		WiRR
 
 	Contributors:
-		Y_Less - ALS Hooking method
+		Y_Less - GetXYInFrontOfPlayer function
 
 	Version:
-		0.3
+		1.2
 */
 
 //------------------------------------------------------------------------------
 
-#if defined _vendingm_included
-	#endinput
-#endif
-#define _vendingm_included
+#define FILTERSCRIPT
+
+#include <a_samp>
+#include <vending>
 
 //------------------------------------------------------------------------------
 
-#if !defined MAX_MACHINES
-	#define MAX_MACHINES 	32
-#endif
+#define DIALOG_MACHINE		2356
+#define DIALOG_UPDATES		2357
+#define DIALOG_EDITOR		2358
+#define DIALOG_CAPTION		"Machine Editor 1.2"
+#define DIALOG_INFO			"1.\tCreate a Machine\n2.\tEdit nearest machine\n3.\tDelete nearest machine\n4.\tGo to machine\n5.\tExport nearest machine\n6.\tExport all machine\n7.\tUpdates"
 
-#define MACHINE_SNACK 		956
-#define MACHINE_SPRUNK 		955
-#define MACHINE_SODA 		1302
+#define COLOR_INFO			0x00a4a7ff
+#define COLOR_ERROR			0xff4040ff
 
-#define SODA_RADIUS			1.2
-#define SPRUNK_RADIUS		1.05
-#define SNACK_RADIUS		1.05
-
-#define INVALID_MACHINE_ID	-1
-
-//------------------------------------------------------------------------------
-
-/*Natives
-native CreateMachine(objectid, Float:x, Float:y, Float:z, Float:rx, Float:ry, Float:rz);
-native OnPlayerUseMachine(playerid, machineid);
-native GetMachineRot(machineid, &Float:rx, &Float:ry, &Float:rz);
-native SetMachineRot(machineid, Float:rx, Float:ry, Float:rz);
-native GetMachinePos(machineid, &Float:x, &Float:y, &Float:z);
-native SetMachinePos(machineid, Float:x, Float:y, Float:z);
-native DestroyMachine(machineid);
-native GetMachineType(machineid);
-native IsValidMachine(machineid);*/
+#define PlaySelectSound(%0)	PlayerPlaySound(%0,1083,0.0,0.0,0.0)
+#define PlayCancelSound(%0)	PlayerPlaySound(%0,1084,0.0,0.0,0.0)
+#define PlayErrorSound(%0)	PlayerPlaySound(%0,1085,0.0,0.0,0.0)
 
 //------------------------------------------------------------------------------
 
-enum E_VENDING_DATA
+enum E_VC_PLAYER
 {
-	Float:E_VENDING_X,
-	Float:E_VENDING_Y,
-	Float:E_VENDING_Z,
-	Float:E_VENDING_RX,
-	Float:E_VENDING_RY,
-	Float:E_VENDING_RZ,
-	Float:E_VENDING_RADIUS,
-	E_VENDING_TYPE,
-	E_VENDING_ID
+	E_VC_PLAYER_VENDING_ID,
+	bool:E_VC_PLAYER_IS_EDITING
 }
-static g_eVendingData[MAX_MACHINES][E_VENDING_DATA];
+new gPlayerData[MAX_PLAYERS][E_VC_PLAYER];
 
 //------------------------------------------------------------------------------
 
-forward OnPlayerUseVendingMachine(playerid, machineid);
-
-//------------------------------------------------------------------------------
-
-stock CreateMachine(objectid, Float:x, Float:y, Float:z, Float:rx, Float:ry, Float:rz)
+public OnFilterScriptInit()
 {
-	new machineid = GetFreeMachineID();
-
-	if(machineid == INVALID_MACHINE_ID)
+	printf("- Machine Creator loaded.");
+	SendClientMessageToAll(COLOR_INFO, "* /machine to open machine editor.");
+	for(new i; i < MAX_PLAYERS; i++)
 	{
-		print("ERROR: Limit of vending machines exceeded! Increase the limit or reduce the created machines.");
-		return 0;
+		if(!IsPlayerConnected(i))
+			continue;
+
+		ResetPlayerVars(i);
 	}
-
-	switch(objectid)
-	{
-		case MACHINE_SPRUNK:
-			g_eVendingData[machineid][E_VENDING_RADIUS] = SPRUNK_RADIUS;
-		case MACHINE_SNACK:
-			g_eVendingData[machineid][E_VENDING_RADIUS] = SNACK_RADIUS;
-		case MACHINE_SODA:
-			g_eVendingData[machineid][E_VENDING_RADIUS] = SODA_RADIUS;
-		default:
-		{
-			printf("ERROR: Invalid vending object id! (Used ID: %i - Valid IDs: 955, 956 or 1302)", objectid);
-			return 0;
-		}
-	}
-
-	g_eVendingData[machineid][E_VENDING_ID]	= CreateObject(objectid, x, y, z, rx, ry, rz, 300.0);
-
-	g_eVendingData[machineid][E_VENDING_X]	= x;
-	g_eVendingData[machineid][E_VENDING_Y]	= y;
-	g_eVendingData[machineid][E_VENDING_Z]	= z;
-
-	g_eVendingData[machineid][E_VENDING_RX]	= rx;
-	g_eVendingData[machineid][E_VENDING_RY]	= ry;
-	g_eVendingData[machineid][E_VENDING_RZ]	= rz;
-
-	g_eVendingData[machineid][E_VENDING_TYPE] = objectid;
-	return machineid;
+	return 1;
 }
 
 //------------------------------------------------------------------------------
 
-stock DestroyMachine(machineid)
-{
-	if(!IsValidMachine(machineid))
-		return 0;
-
-    DestroyObject(g_eVendingData[machineid][E_VENDING_ID]);
-  
-    g_eVendingData[machineid][E_VENDING_ID] = INVALID_MACHINE_ID;
-
-	g_eVendingData[machineid][E_VENDING_X] = 0.0;
-	g_eVendingData[machineid][E_VENDING_Y] = 0.0;
-	g_eVendingData[machineid][E_VENDING_Z] = 0.0;
-
-	g_eVendingData[machineid][E_VENDING_RX] = 0.0;
-	g_eVendingData[machineid][E_VENDING_RY] = 0.0;
-	g_eVendingData[machineid][E_VENDING_RZ] = 0.0;
-
-	g_eVendingData[machineid][E_VENDING_TYPE] = 0;
-    return 1;
-}
-
-//------------------------------------------------------------------------------
-
-stock IsValidMachine(machineid)
-	return !(g_eVendingData[machineid][E_VENDING_X] == 0.0 && g_eVendingData[machineid][E_VENDING_Y] == 0.0);
-
-//------------------------------------------------------------------------------
-
-stock GetMachineType(machineid)
-	return g_eVendingData[machineid][E_VENDING_TYPE];
-
-//------------------------------------------------------------------------------
-
-stock GetFreeMachineID()
+public OnFilterScriptExit()
 {
 	for(new i; i < MAX_MACHINES; i++)
-		if(g_eVendingData[i][E_VENDING_X] == 0.0 && g_eVendingData[i][E_VENDING_Y] == 0.0)
-			return i;
-
-	return INVALID_MACHINE_ID;
-}
-
-//------------------------------------------------------------------------------
-
-stock SetMachinePos(machineid, Float:x, Float:y, Float:z)
-{
-	if(!IsValidMachine(machineid))
-		return 0;
-
-	g_eVendingData[machineid][E_VENDING_X] = x;
-	g_eVendingData[machineid][E_VENDING_Y] = y;
-	g_eVendingData[machineid][E_VENDING_Z] = z;
-	SetObjectPos(g_eVendingData[machineid][E_VENDING_ID], x, y, z);
+		DestroyMachine(i);
 	return 1;
 }
 
 //------------------------------------------------------------------------------
 
-stock SetMachineRot(machineid, Float:rx, Float:ry, Float:rz)
+public OnPlayerSpawn(playerid)
 {
-	if(!IsValidMachine(machineid))
-		return 0;
-
-	g_eVendingData[machineid][E_VENDING_RX] = rx;
-	g_eVendingData[machineid][E_VENDING_RY] = ry;
-	g_eVendingData[machineid][E_VENDING_RZ] = rz;
-	SetObjectRot(g_eVendingData[machineid][E_VENDING_ID], rx, ry, rz);
+	SendClientMessage(playerid, COLOR_INFO, "* /machine to open machine editor.");
 	return 1;
 }
 
 //------------------------------------------------------------------------------
 
-stock GetMachinePos(machineid, &Float:x, &Float:y, &Float:z)
+public OnPlayerCommandText(playerid, cmdtext[])
 {
-	if(!IsValidMachine(machineid))
-		return 0;
+    if(!strcmp(cmdtext, "/machine", true))
+    {
+    	if(gPlayerData[playerid][E_VC_PLAYER_IS_EDITING])
+    		return SendClientMessage(playerid, COLOR_ERROR, "* You are editing a machine already!");
 
-	x = g_eVendingData[machineid][E_VENDING_X];
-	y = g_eVendingData[machineid][E_VENDING_Y];
-	z = g_eVendingData[machineid][E_VENDING_Z];
+        ShowPlayerDialog(playerid, DIALOG_EDITOR, DIALOG_STYLE_LIST, DIALOG_CAPTION, DIALOG_INFO, "Select", "Cancel");
+        PlaySelectSound(playerid);
+        return 1;
+    }
+    return 0;
+}
+
+//------------------------------------------------------------------------------
+
+public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
+{
+	switch(dialogid)
+	{
+		case DIALOG_MACHINE:
+		{
+			if(!response)
+			{
+				ShowPlayerDialog(playerid, DIALOG_EDITOR, DIALOG_STYLE_LIST, DIALOG_CAPTION, DIALOG_INFO, "Select", "Cancel");
+				PlayCancelSound(playerid);
+				return 1;
+			}
+
+			new machinetype;
+			if(listitem == 0) machinetype = MACHINE_SPRUNK;
+			else if(listitem == 1) machinetype = MACHINE_SNACK;
+			else if(listitem == 2) machinetype = MACHINE_SODA;
+
+			new Float:X, Float:Y, Float:Z;
+			GetPlayerPos(playerid, X, Y, Z);
+			GetXYInFrontOfPlayer(playerid, X, Y, 5.0);
+			gPlayerData[playerid][E_VC_PLAYER_VENDING_ID] = CreateMachine(machinetype, X, Y, Z, 0.00, 0.00, 180.00);
+			gPlayerData[playerid][E_VC_PLAYER_IS_EDITING] = true;
+
+			EditObject(playerid, GetMachineObjectID(gPlayerData[playerid][E_VC_PLAYER_VENDING_ID]));
+			SendClientMessage(playerid, COLOR_INFO, "* Edit the machine position and save.");
+			PlaySelectSound(playerid);
+		}
+		case DIALOG_EDITOR:
+		{
+			if(!response)
+				return PlayCancelSound(playerid);
+
+			switch(listitem)
+			{
+				case 0: // Create a vending
+				{
+					ShowPlayerDialog(playerid, DIALOG_MACHINE, DIALOG_STYLE_LIST, DIALOG_CAPTION, "1.\tSprunk Machine\n2.\tSnack Machine\n3.\tSoda Machine", "Select", "Back");
+					PlaySelectSound(playerid);
+					return 1;
+				}
+				case 1: //Edit nearest vending
+				{
+					new
+						machineid = INVALID_MACHINE_ID,
+						Float:distance = 20.0,
+						Float:X,
+						Float:Y,
+						Float:Z;
+
+					for(new i; i < MAX_MACHINES; i++)
+					{
+						if(!IsValidMachine(i))
+							continue;
+
+						GetMachinePos(i, X, Y, Z);
+						if(GetPlayerDistanceFromPoint(playerid, X, Y, Z) < distance)
+						{
+							distance = GetPlayerDistanceFromPoint(playerid, X, Y, Z);
+							machineid = i;
+						}
+					}
+
+					if(machineid == INVALID_MACHINE_ID)
+					{
+						SendClientMessage(playerid, COLOR_ERROR, "* No machines near you!");
+						ShowPlayerDialog(playerid, DIALOG_EDITOR, DIALOG_STYLE_LIST, DIALOG_CAPTION, DIALOG_INFO, "Select", "Cancel");
+						PlayErrorSound(playerid);
+						return 1;
+					}
+
+					gPlayerData[playerid][E_VC_PLAYER_VENDING_ID]	= machineid;
+					gPlayerData[playerid][E_VC_PLAYER_IS_EDITING]	= true;
+					EditObject(playerid, GetMachineObjectID(gPlayerData[playerid][E_VC_PLAYER_VENDING_ID]));
+					PlaySelectSound(playerid);
+					return 1;
+				}
+				case 2: // Delete nearest vending
+				{
+					new
+						machineid = INVALID_MACHINE_ID,
+						Float:distance = 20.0,
+						Float:X,
+						Float:Y,
+						Float:Z;
+
+					for(new i; i < MAX_MACHINES; i++)
+					{
+						if(!IsValidMachine(i))
+							continue;
+
+						GetMachinePos(i, X, Y, Z);
+						if(GetPlayerDistanceFromPoint(playerid, X, Y, Z) < distance)
+						{
+							distance = GetPlayerDistanceFromPoint(playerid, X, Y, Z);
+							machineid = i;
+						}
+					}
+
+					if(machineid == INVALID_MACHINE_ID)
+					{
+						SendClientMessage(playerid, COLOR_ERROR, "* No machine near you!");
+						ShowPlayerDialog(playerid, DIALOG_EDITOR, DIALOG_STYLE_LIST, DIALOG_CAPTION, DIALOG_INFO, "Select", "Cancel");
+						PlayErrorSound(playerid);
+						return 1;
+					}
+
+					DestroyMachine(machineid);
+					PlaySelectSound(playerid);
+					return 1;
+				}
+				case 3: //Go to vending
+				{
+					new
+						Float:X,
+						Float:Y,
+						Float:Z;
+
+					new dialogList[2048];
+
+					for(new i; i < MAX_MACHINES; i++)
+					{
+						if(!IsValidMachine(i))
+							continue;
+
+						GetMachinePos(i, X, Y, Z);
+
+						new machineInfo[40];
+						format(machineInfo, 40, "MachineID: %d\tDistance: %.2f\n", i, GetPlayerDistanceFromPoint(playerid, X, Y, Z));
+						strins(dialogList, machineInfo, strlen(dialogList));
+					}
+
+					if(strlen(dialogList) < 1)
+					{
+						SendClientMessage(playerid, COLOR_ERROR, "* No machine created!");
+						ShowPlayerDialog(playerid, DIALOG_EDITOR, DIALOG_STYLE_LIST, DIALOG_CAPTION, DIALOG_INFO, "Select", "Cancel");
+						PlayErrorSound(playerid);
+						return 1;
+					}
+
+					ShowPlayerDialog(playerid, DIALOG_EDITOR+1, DIALOG_STYLE_LIST, DIALOG_CAPTION, dialogList, "Go", "Back");
+					PlaySelectSound(playerid);
+					return 1;
+				}
+				case 4: //Export nearest vending
+				{
+					new
+						machineid = INVALID_MACHINE_ID,
+						Float:distance = 20.0,
+						Float:X,
+						Float:Y,
+						Float:Z,
+						Float:rX,
+						Float:rY,
+						Float:rZ;
+
+					for(new i; i < MAX_MACHINES; i++)
+					{
+						if(!IsValidMachine(i))
+							continue;
+
+						GetMachinePos(i, X, Y, Z);
+						if(GetPlayerDistanceFromPoint(playerid, X, Y, Z) < distance)
+						{
+							distance = GetPlayerDistanceFromPoint(playerid, X, Y, Z);
+							machineid = i;
+						}
+					}
+
+					if(machineid == INVALID_MACHINE_ID)
+					{
+						SendClientMessage(playerid, COLOR_ERROR, "* No machine near you!");
+						ShowPlayerDialog(playerid, DIALOG_EDITOR, DIALOG_STYLE_LIST, DIALOG_CAPTION, DIALOG_INFO, "Select", "Cancel");
+						PlayErrorSound(playerid);
+						return 1;
+					}
+
+					GetMachinePos(machineid, X, Y, Z);
+					GetMachineRot(machineid, rX, rY, rZ);
+
+					new machineName[32];
+					switch(GetMachineType(machineid))
+					{
+						case MACHINE_SPRUNK:
+							machineName = "MACHINE_SPRUNK";
+						case MACHINE_SNACK:
+							machineName = "MACHINE_SNACK";
+						case MACHINE_SODA:
+							machineName = "MACHINE_SODA";
+					}
+
+					new textToSave[128];
+					new File:vendingFile = fopen("vending.txt", io_append);
+			        format(textToSave, 256, "CreateMachine(%s, %f, %f, %f, %f, %f, %f);\n", machineName, X, Y, Z, rX, rY, rZ);
+			        fwrite(vendingFile, textToSave);
+			        fclose(vendingFile);
+
+			        PlaySelectSound(playerid);
+			        SendClientMessage(playerid, COLOR_INFO, "* Nearest machine saved to scriptfiles/vending.txt");
+			        return 1;
+				}
+				case 5: // Export all vendings
+				{
+					new count;
+					for(new i; i < MAX_MACHINES; i++)
+					{
+						if(!IsValidMachine(i))
+							continue;
+
+						count++;
+
+						new Float:X, Float:Y, Float:Z, Float:rX, Float:rY, Float:rZ;
+						GetMachinePos(i, X, Y, Z);
+						GetMachineRot(i, rX, rY, rZ);
+
+						new machineName[32];
+						switch(GetMachineType(i))
+						{
+							case MACHINE_SPRUNK:
+								machineName = "MACHINE_SPRUNK";
+							case MACHINE_SNACK:
+								machineName = "MACHINE_SNACK";
+							case MACHINE_SODA:
+								machineName = "MACHINE_SODA";
+						}
+
+						new textToSave[128];
+						new File:vendingFile = fopen("vending.txt", io_append);
+				        format(textToSave, 256, "CreateMachine(%s, %f, %f, %f, %f, %f, %f);\n", machineName, X, Y, Z, rX, rY, rZ);
+			        	fwrite(vendingFile, textToSave);
+			        	fclose(vendingFile);
+					}
+
+					if(count != 0)
+					{
+						PlaySelectSound(playerid);
+			        	SendClientMessage(playerid, COLOR_INFO, "* All machines saved to scriptfiles/vending.txt");						
+					}
+					else
+					{
+						PlayErrorSound(playerid);
+			        	SendClientMessage(playerid, COLOR_ERROR, "* No machines created!");	
+			        	ShowPlayerDialog(playerid, DIALOG_EDITOR, DIALOG_STYLE_LIST, DIALOG_CAPTION, DIALOG_INFO, "Select", "Cancel");
+					}
+					return 1;
+				}
+				case 6: // Updates
+				{
+					ShowPlayerDialog(playerid, DIALOG_UPDATES, DIALOG_STYLE_MSGBOX, DIALOG_CAPTION, "Vending Creator & Vending Include created by WiRR\n\nFor new updates or report a bug/suggestion go to:\nhttps://github.com/WiRR-/SA-MP-Vending-Machine", "Back", "");
+					PlaySelectSound(playerid);
+					return 1;
+				}
+			}
+		}
+		case DIALOG_EDITOR+1:
+		{
+			if(!response)
+			{
+				ShowPlayerDialog(playerid, DIALOG_EDITOR, DIALOG_STYLE_LIST, DIALOG_CAPTION, DIALOG_INFO, "Select", "Cancel");
+				PlayCancelSound(playerid);
+				return 1;
+			}
+
+			new machineidList[MAX_MACHINES], count;
+			for(new i; i < MAX_MACHINES; i++)
+			{
+				if(!IsValidMachine(i))
+					continue;
+
+				machineidList[count] = i;
+				count++;
+			}
+
+			new	Float:X, Float:Y, Float:Z;
+			GetMachinePos(machineidList[listitem], X, Y, Z);
+
+			SetPlayerPos(playerid, X+1.0, Y+1.0, Z+1.0);
+
+			PlaySelectSound(playerid);
+			return 1;
+		}
+		case DIALOG_UPDATES:
+		{
+			ShowPlayerDialog(playerid, DIALOG_EDITOR, DIALOG_STYLE_LIST, DIALOG_CAPTION, DIALOG_INFO, "Select", "Cancel");
+			PlaySelectSound(playerid);
+			return 1;
+		}
+	}
+	return 0;
+}
+
+//------------------------------------------------------------------------------
+
+public OnPlayerEditObject(playerid, playerobject, objectid, response, Float:fX, Float:fY, Float:fZ, Float:fRotX, Float:fRotY, Float:fRotZ)
+{
+	new Float:oldX, Float:oldY, Float:oldZ, Float:oldRotX, Float:oldRotY, Float:oldRotZ;
+	GetObjectPos(objectid, oldX, oldY, oldZ);
+	GetObjectRot(objectid, oldRotX, oldRotY, oldRotZ);
+
+	if(!playerobject)
+	{
+	    if(!IsValidObject(objectid)) return 1;
+
+	    SetObjectPos(objectid, fX, fY, fZ);		          
+        SetObjectRot(objectid, fRotX, fRotY, fRotZ);
+	}
+ 
+	if(response == EDIT_RESPONSE_FINAL)
+	{
+		if(objectid == GetMachineObjectID(gPlayerData[playerid][E_VC_PLAYER_VENDING_ID]))
+		{
+			SetMachinePos(gPlayerData[playerid][E_VC_PLAYER_VENDING_ID], fX, fY, fZ);
+			SetMachineRot(gPlayerData[playerid][E_VC_PLAYER_VENDING_ID], fRotX, fRotY, fRotZ);
+		}
+		gPlayerData[playerid][E_VC_PLAYER_IS_EDITING] = false;
+		PlaySelectSound(playerid);
+	}
+ 
+	if(response == EDIT_RESPONSE_CANCEL)
+	{
+		if(!playerobject)
+		{
+			SetObjectPos(objectid, oldX, oldY, oldZ);
+			SetObjectRot(objectid, oldRotX, oldRotY, oldRotZ);
+		}
+		else
+		{
+			SetPlayerObjectPos(playerid, objectid, oldX, oldY, oldZ);
+			SetPlayerObjectRot(playerid, objectid, oldRotX, oldRotY, oldRotZ);
+		}
+	}
 	return 1;
 }
 
 //------------------------------------------------------------------------------
 
-stock GetMachineRot(machineid, &Float:rx, &Float:ry, &Float:rz)
+public OnPlayerUseVendingMachine(playerid, machineid)
 {
-	if(!IsValidMachine(machineid))
-		return 0;
+	new Float:health;
+	GetPlayerHealth(playerid, health);
 
-	rx = g_eVendingData[machineid][E_VENDING_RX];
-	ry = g_eVendingData[machineid][E_VENDING_RY];
-	rz = g_eVendingData[machineid][E_VENDING_RZ];
+	if((health + 10.0) > 100.0) health = 100.0;
+	else health += 10.0;
+
+	SetPlayerHealth(playerid, health);
+	GivePlayerMoney(playerid, -1);
 	return 1;
 }
 
 //------------------------------------------------------------------------------
 
-stock GetMachineObjectID(machineid)
-	return g_eVendingData[machineid][E_VENDING_ID];
+public OnPlayerConnect(playerid)
+{
+	ResetPlayerVars(playerid);
+	return 1;
+}
 
 //------------------------------------------------------------------------------
 
-GetXYInFrontOfVending(machineid, &Float:x, &Float:y, Float:distance)
-{
-	new Float:a, Float:z;
-	GetMachineRot(machineid, x, y, a);
-	GetMachinePos(machineid, x, y, z);
+GetXYInFrontOfPlayer(playerid, &Float:x, &Float:y, Float:distance)
+{	// Created by Y_Less
 
-	a += 180.0;
-	if(a > 359.0) a -= 359.0;
+	new Float:a;
+
+	GetPlayerPos(playerid, x, y, a);
+	GetPlayerFacingAngle(playerid, a);
+
+	if (GetPlayerVehicleID(playerid)) {
+	    GetVehicleZAngle(GetPlayerVehicleID(playerid), a);
+	}
 
 	x += (distance * floatsin(-a, degrees));
 	y += (distance * floatcos(-a, degrees));
@@ -252,42 +494,10 @@ GetXYInFrontOfVending(machineid, &Float:x, &Float:y, Float:distance)
 
 //------------------------------------------------------------------------------
 
-public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
+ResetPlayerVars(playerid)
 {
-	if(newkeys & KEY_SECONDARY_ATTACK && GetPlayerAnimationIndex(playerid) != 1660)
-	{
-		for(new i; i < MAX_MACHINES; i++)
-		{
-			if(!IsValidMachine(i))
-				continue;
-
-			new Float:x, Float:y;
-			GetXYInFrontOfVending(i, x, y, 0.5);
-			if(!IsPlayerInRangeOfPoint(playerid, g_eVendingData[i][E_VENDING_RADIUS], x, y, g_eVendingData[i][E_VENDING_Z]))
-				continue;
-
-			SetPlayerFacingAngle(playerid, g_eVendingData[i][E_VENDING_RZ]);
-			ApplyAnimation(playerid, "VENDING", "VEND_USE", 10.0, 0, 0, 0, 0, 0, 1);
-			if(g_eVendingData[i][E_VENDING_TYPE] == MACHINE_SNACK) PlayerPlaySound(playerid, 42601, 0.0, 0.0, 0.0);
-			else PlayerPlaySound(playerid, 42600, 0.0, 0.0, 0.0);
-			OnPlayerUseVendingMachine(playerid, i);
-		}
-	}
-	#if defined inc_Ven_OnPlayerKeyStateChange
-		return inc_Ven_OnPlayerKeyStateChange(playerid, newkeys, oldkeys);
-	#else
-		return 0;
-	#endif
+	gPlayerData[playerid][E_VC_PLAYER_VENDING_ID]	= INVALID_MACHINE_ID;	
+	gPlayerData[playerid][E_VC_PLAYER_IS_EDITING]	= false;
 }
-#if defined _ALS_OnPlayerKeyStateChange
-	#undef OnPlayerKeyStateChange
-#else
-	#define _ALS_OnPlayerKeyStateChange
-#endif
- 
-#define OnPlayerKeyStateChange inc_Ven_OnPlayerKeyStateChange
-#if defined inc_Ven_OnPlayerKeyStateChange
-	forward inc_Ven_OnPlayerKeyStateChange(playerid, newkeys, oldkeys);
-#endif
 
 //------------------------------------------------------------------------------
