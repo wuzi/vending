@@ -32,7 +32,7 @@
 		Y_Less - GetXYInFrontOfPlayer function
 
 	Version:
-		1.0.1
+		1.1
 */
 
 //------------------------------------------------------------------------------
@@ -46,7 +46,7 @@
 
 #define DIALOG_UPDATES		2357
 #define DIALOG_EDITOR		2358
-#define DIALOG_CAPTION		"Machine Editor 1.0.1"
+#define DIALOG_CAPTION		"Machine Editor 1.1"
 #define DIALOG_INFO			"1.\tCreate a Machine\n2.\tEdit nearest machine\n3.\tDelete nearest machine\n4.\tGo to machine\n5.\tExport nearest machine\n6.\tExport all machine\n7.\tUpdates"
 
 #define COLOR_INFO			0x00a4a7ff
@@ -280,7 +280,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					GetMachineRot(machineid, rX, rY, rZ);
 
 					new machineName[32];
-					switch(GetMachineObjectID(machineid))
+					switch(GetMachineType(machineid))
 					{
 						case 955:
 							machineName = "MACHINE_SPRUNK";
@@ -292,7 +292,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 
 					new textToSave[128];
 					new File:vendingFile = fopen("vending.txt", io_append);
-			        format(textToSave, 256, "CreateMachine(%s, %f, %f, %f, %f, %f, %f);", machineName, X, Y, Z, rX, rY, rZ);
+			        format(textToSave, 256, "CreateMachine(%s, %f, %f, %f, %f, %f, %f);\n", machineName, X, Y, Z, rX, rY, rZ);
 			        fwrite(vendingFile, textToSave);
 			        fclose(vendingFile);
 
@@ -315,7 +315,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 						GetMachineRot(i, rX, rY, rZ);
 
 						new machineName[32];
-						switch(GetMachineObjectID(i))
+						switch(GetMachineType(i))
 						{
 							case 955:
 								machineName = "MACHINE_SPRUNK";
@@ -327,7 +327,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 
 						new textToSave[128];
 						new File:vendingFile = fopen("vending.txt", io_append);
-				        format(textToSave, 256, "CreateMachine(%s, %f, %f, %f, %f, %f, %f);", machineName, X, Y, Z, rX, rY, rZ);
+				        format(textToSave, 256, "CreateMachine(%s, %f, %f, %f, %f, %f, %f);\n", machineName, X, Y, Z, rX, rY, rZ);
 			        	fwrite(vendingFile, textToSave);
 			        	fclose(vendingFile);
 					}
