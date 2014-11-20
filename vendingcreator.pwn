@@ -32,7 +32,7 @@
 		Y_Less - GetXYInFrontOfPlayer function
 
 	Version:
-		1.0
+		1.0.1
 */
 
 //------------------------------------------------------------------------------
@@ -40,13 +40,13 @@
 #define FILTERSCRIPT
 
 #include <a_samp>
-#include "../include/vending.inc"
+#include "vending.inc"
 
 //------------------------------------------------------------------------------
 
 #define DIALOG_UPDATES		2357
 #define DIALOG_EDITOR		2358
-#define DIALOG_CAPTION		"Machine Editor 1.0"
+#define DIALOG_CAPTION		"Machine Editor 1.0.1"
 #define DIALOG_INFO			"1.\tCreate a Machine\n2.\tEdit nearest machine\n3.\tDelete nearest machine\n4.\tGo to machine\n5.\tExport nearest machine\n6.\tExport all machine\n7.\tUpdates"
 
 #define COLOR_INFO			0x00a4a7ff
@@ -132,7 +132,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					new Float:X, Float:Y, Float:Z;
 					GetPlayerPos(playerid, X, Y, Z);
 					GetXYInFrontOfPlayer(playerid, X, Y, 5.0);
-					gPlayerData[playerid][E_VC_PLAYER_VENDING_ID] = CreateMachine(MACHINE_SPRUNK, X, Y, Z, 0.00, 0.00, 0.00);
+					gPlayerData[playerid][E_VC_PLAYER_VENDING_ID] = CreateMachine(MACHINE_SPRUNK, X, Y, Z, 0.00, 0.00, 180.00);
 					gPlayerData[playerid][E_VC_PLAYER_IS_EDITING] = true;
 
 					EditObject(playerid, GetMachineObjectID(gPlayerData[playerid][E_VC_PLAYER_VENDING_ID]));
@@ -408,6 +408,11 @@ public OnPlayerEditObject(playerid, playerobject, objectid, response, Float:fX, 
  
 	if(response == EDIT_RESPONSE_FINAL)
 	{
+		if(objectid == GetMachineObjectID(gPlayerData[playerid][E_VC_PLAYER_VENDING_ID]))
+		{
+			SetMachinePos(gPlayerData[playerid][E_VC_PLAYER_VENDING_ID], fX, fY, fZ);
+			SetMachineRot(gPlayerData[playerid][E_VC_PLAYER_VENDING_ID], fRotX, fRotY, fRotZ);
+		}
 		gPlayerData[playerid][E_VC_PLAYER_IS_EDITING] = false;
 		PlaySelectSound(playerid);
 	}
