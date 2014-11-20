@@ -32,7 +32,7 @@
 		Y_Less - GetXYInFrontOfPlayer function
 
 	Version:
-		1.1
+		1.2
 */
 
 //------------------------------------------------------------------------------
@@ -40,13 +40,14 @@
 #define FILTERSCRIPT
 
 #include <a_samp>
-#include "vending.inc"
+#include <vending>
 
 //------------------------------------------------------------------------------
 
+#define DIALOG_MACHINE		2356
 #define DIALOG_UPDATES		2357
 #define DIALOG_EDITOR		2358
-#define DIALOG_CAPTION		"Machine Editor 1.1"
+#define DIALOG_CAPTION		"Machine Editor 1.2"
 #define DIALOG_INFO			"1.\tCreate a Machine\n2.\tEdit nearest machine\n3.\tDelete nearest machine\n4.\tGo to machine\n5.\tExport nearest machine\n6.\tExport all machine\n7.\tUpdates"
 
 #define COLOR_INFO			0x00a4a7ff
@@ -120,6 +121,30 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 {
 	switch(dialogid)
 	{
+		case DIALOG_MACHINE:
+		{
+			if(!response)
+			{
+				ShowPlayerDialog(playerid, DIALOG_EDITOR, DIALOG_STYLE_LIST, DIALOG_CAPTION, DIALOG_INFO, "Select", "Cancel");
+				PlayCancelSound(playerid);
+				return 1;
+			}
+
+			new machinetype;
+			if(listitem == 0) machinetype = MACHINE_SPRUNK;
+			else if(listitem == 1) machinetype = MACHINE_SNACK;
+			else if(listitem == 2) machinetype = MACHINE_SODA;
+
+			new Float:X, Float:Y, Float:Z;
+			GetPlayerPos(playerid, X, Y, Z);
+			GetXYInFrontOfPlayer(playerid, X, Y, 5.0);
+			gPlayerData[playerid][E_VC_PLAYER_VENDING_ID] = CreateMachine(machinetype, X, Y, Z, 0.00, 0.00, 180.00);
+			gPlayerData[playerid][E_VC_PLAYER_IS_EDITING] = true;
+
+			EditObject(playerid, GetMachineObjectID(gPlayerData[playerid][E_VC_PLAYER_VENDING_ID]));
+			SendClientMessage(playerid, COLOR_INFO, "* Edit the machine position and save.");
+			PlaySelectSound(playerid);
+		}
 		case DIALOG_EDITOR:
 		{
 			if(!response)
@@ -129,14 +154,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			{
 				case 0: // Create a vending
 				{
-					new Float:X, Float:Y, Float:Z;
-					GetPlayerPos(playerid, X, Y, Z);
-					GetXYInFrontOfPlayer(playerid, X, Y, 5.0);
-					gPlayerData[playerid][E_VC_PLAYER_VENDING_ID] = CreateMachine(MACHINE_SPRUNK, X, Y, Z, 0.00, 0.00, 180.00);
-					gPlayerData[playerid][E_VC_PLAYER_IS_EDITING] = true;
-
-					EditObject(playerid, GetMachineObjectID(gPlayerData[playerid][E_VC_PLAYER_VENDING_ID]));
-					SendClientMessage(playerid, COLOR_INFO, "* Edit the machine position and save.");
+					ShowPlayerDialog(playerid, DIALOG_MACHINE, DIALOG_STYLE_LIST, DIALOG_CAPTION, "1.\tSprunk Machine\n2.\tSnack Machine\n3.\tSoda Machine", "Select", "Back");
 					PlaySelectSound(playerid);
 					return 1;
 				}
@@ -282,11 +300,11 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					new machineName[32];
 					switch(GetMachineType(machineid))
 					{
-						case 955:
+						case MACHINE_SPRUNK:
 							machineName = "MACHINE_SPRUNK";
-						case 956:
-							machineName = "MACHINE_CANDY";
-						case 1302:
+						case MACHINE_SNACK:
+							machineName = "MACHINE_SNACK";
+						case MACHINE_SODA:
 							machineName = "MACHINE_SODA";
 					}
 
@@ -317,11 +335,11 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 						new machineName[32];
 						switch(GetMachineType(i))
 						{
-							case 955:
+							case MACHINE_SPRUNK:
 								machineName = "MACHINE_SPRUNK";
-							case 956:
-								machineName = "MACHINE_CANDY";
-							case 1302:
+							case MACHINE_SNACK:
+								machineName = "MACHINE_SNACK";
+							case MACHINE_SODA:
 								machineName = "MACHINE_SODA";
 						}
 
