@@ -32,7 +32,7 @@
 		Y_Less - ALS Hooking method
 
 	Version:
-		0.2.5
+		0.3
 */
 
 //------------------------------------------------------------------------------
@@ -268,6 +268,8 @@ public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 
 			SetPlayerFacingAngle(playerid, g_eVendingData[i][E_VENDING_RZ]);
 			ApplyAnimation(playerid, "VENDING", "VEND_USE", 10.0, 0, 0, 0, 0, 0, 1);
+			if(g_eVendingData[machineid][E_VENDING_TYPE] == MACHINE_CANDY) PlayerPlaySound(playerid, 42601, 0.0, 0.0, 0.0);
+			else PlayerPlaySound(playerid, 42600, 0.0, 0.0, 0.0);
 			OnPlayerUseVendingMachine(playerid, i);
 		}
 	}
