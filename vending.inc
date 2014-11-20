@@ -48,13 +48,13 @@
 	#define MAX_MACHINES 	32
 #endif
 
-#define MACHINE_CANDY 		956
+#define MACHINE_SNACK 		956
 #define MACHINE_SPRUNK 		955
 #define MACHINE_SODA 		1302
 
 #define SODA_RADIUS			1.2
 #define SPRUNK_RADIUS		1.05
-#define CANDY_RADIUS		1.05
+#define SNACK_RADIUS		1.05
 
 #define INVALID_MACHINE_ID	-1
 
@@ -107,8 +107,8 @@ stock CreateMachine(objectid, Float:x, Float:y, Float:z, Float:rx, Float:ry, Flo
 	{
 		case MACHINE_SPRUNK:
 			g_eVendingData[machineid][E_VENDING_RADIUS] = SPRUNK_RADIUS;
-		case MACHINE_CANDY:
-			g_eVendingData[machineid][E_VENDING_RADIUS] = CANDY_RADIUS;
+		case MACHINE_SNACK:
+			g_eVendingData[machineid][E_VENDING_RADIUS] = SNACK_RADIUS;
 		case MACHINE_SODA:
 			g_eVendingData[machineid][E_VENDING_RADIUS] = SODA_RADIUS;
 		default:
@@ -268,7 +268,7 @@ public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 
 			SetPlayerFacingAngle(playerid, g_eVendingData[i][E_VENDING_RZ]);
 			ApplyAnimation(playerid, "VENDING", "VEND_USE", 10.0, 0, 0, 0, 0, 0, 1);
-			if(g_eVendingData[machineid][E_VENDING_TYPE] == MACHINE_CANDY) PlayerPlaySound(playerid, 42601, 0.0, 0.0, 0.0);
+			if(g_eVendingData[i][E_VENDING_TYPE] == MACHINE_SNACK) PlayerPlaySound(playerid, 42601, 0.0, 0.0, 0.0);
 			else PlayerPlaySound(playerid, 42600, 0.0, 0.0, 0.0);
 			OnPlayerUseVendingMachine(playerid, i);
 		}
