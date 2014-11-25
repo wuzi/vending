@@ -27,7 +27,7 @@ main()
 }
 
 public OnPlayerUseVendingMachine(playerid, machineid)
-{
+{ // Called when the player use the machine.
 	// Restore 10% of player's health and takes 1$.
 	new Float:health;
 	GetPlayerHealth(playerid, health);
@@ -39,6 +39,20 @@ public OnPlayerUseVendingMachine(playerid, machineid)
 	// Give player stats
 	SetPlayerHealth(playerid, health);
 	GivePlayerMoney(playerid, -1);
+	return 1;
+}
+
+
+public OnPlayerDrinkSprunk(playerid)
+{// Called when the player drink from the can.
+	new Float:health;
+	GetPlayerHealth(playerid, health);
+
+	if((health + 10.0) > 100.0) health = 100.0;
+	else health += 10.0;
+
+	SetPlayerHealth(playerid, health);
+	SendClientMessage(playerid, COLOR_INFO, "* You drank the sprunk. (+10HP)");
 	return 1;
 }
 ```
