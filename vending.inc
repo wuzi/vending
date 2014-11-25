@@ -32,7 +32,7 @@
 		Y_Less - ALS Hooking method
 
 	Version:
-		0.3.2
+		1.0
 */
 
 //------------------------------------------------------------------------------
@@ -48,15 +48,15 @@
 	#define MAX_MACHINES 			32
 #endif
 
-#define MACHINE_SNACK 			956
-#define MACHINE_SPRUNK 			955
+#define MACHINE_SNACK 				956
+#define MACHINE_SPRUNK 				955
 #define MACHINE_SODA				1302
 
 #define SODA_RADIUS					1.2
 #define SPRUNK_RADIUS				1.05
 #define SNACK_RADIUS				1.05
 
-#define INVALID_MACHINE_ID	-1
+#define INVALID_MACHINE_ID			-1
 
 //------------------------------------------------------------------------------
 
@@ -90,6 +90,8 @@ static g_eVendingData[MAX_MACHINES][E_VENDING_DATA];
 //------------------------------------------------------------------------------
 
 forward OnPlayerUseVendingMachine(playerid, machineid);
+forward OnPlayerDrinkSprunk(playerid);
+forward ven_SetPlayerAnimation(playerid);
 
 //------------------------------------------------------------------------------
 
@@ -271,7 +273,14 @@ public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 			if(g_eVendingData[i][E_VENDING_TYPE] == MACHINE_SNACK) PlayerPlaySound(playerid, 42601, 0.0, 0.0, 0.0);
 			else PlayerPlaySound(playerid, 42600, 0.0, 0.0, 0.0);
 			OnPlayerUseVendingMachine(playerid, i);
+			SetTimerEx("ven_SetPlayerAnimation", 2500, false, "i", playerid);
 		}
+	}
+	
+	if((newkeys & KEY_FIRE) && (GetPVarInt(playerid, "ven_lastDrink") < GetTickCount()) && (GetPlayerSpecialAction(playerid) == SPECIAL_ACTION_DRINK_SPRUNK))
+	{
+		OnPlayerDrinkSprunk(playerid);
+		SetPVarInt(playerid, "ven_lastDrink", GetTickCount() + 2350);
 	}
 	#if defined inc_Ven_OnPlayerKeyStateChange
 		return inc_Ven_OnPlayerKeyStateChange(playerid, newkeys, oldkeys);
@@ -289,5 +298,13 @@ public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 #if defined inc_Ven_OnPlayerKeyStateChange
 	forward inc_Ven_OnPlayerKeyStateChange(playerid, newkeys, oldkeys);
 #endif
+
+//------------------------------------------------------------------------------
+
+public ven_SetPlayerAnimation(playerid)
+{
+	SetPlayerSpecialAction(playerid, SPECIAL_ACTION_DRINK_SPRUNK);
+	return 1;
+}
 
 //------------------------------------------------------------------------------
