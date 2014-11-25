@@ -32,7 +32,7 @@
 		Y_Less - GetXYInFrontOfPlayer function
 
 	Version:
-		1.2
+		1.3
 */
 
 //------------------------------------------------------------------------------
@@ -463,6 +463,21 @@ public OnPlayerUseVendingMachine(playerid, machineid)
 
 	SetPlayerHealth(playerid, health);
 	GivePlayerMoney(playerid, -1);
+	return 1;
+}
+
+//------------------------------------------------------------------------------
+
+public OnPlayerDrinkSprunk(playerid)
+{
+	new Float:health;
+	GetPlayerHealth(playerid, health);
+
+	if((health + 10.0) > 100.0) health = 100.0;
+	else health += 10.0;
+
+	SetPlayerHealth(playerid, health);
+	SendClientMessage(playerid, COLOR_INFO, "* You drank the sprunk. (+10HP)");
 	return 1;
 }
 
