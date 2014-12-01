@@ -8,7 +8,7 @@
 
 	License:
 		The MIT License (MIT)
-		Copyright (c) 2014 WiRR-
+		Copyright (c) 2014 Larceny
 		Permission is hereby granted, free of charge, to any person obtaining a copy
 		of this software and associated documentation files (the "Software"), to deal
 		in the Software without restriction, including without limitation the rights
@@ -26,7 +26,7 @@
 		SOFTWARE.
 
 	Author:
-		WiRR
+		Larceny
 
 	Contributors:
 		Y_Less - GetXYInFrontOfPlayer function
@@ -365,7 +365,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				}
 				case 6: // Updates
 				{
-					ShowPlayerDialog(playerid, DIALOG_UPDATES, DIALOG_STYLE_MSGBOX, DIALOG_CAPTION, "Vending Creator & Vending Include created by WiRR\n\nFor new updates or report a bug/suggestion go to:\nhttps://github.com/WiRR-/SA-MP-Vending-Machine", "Back", "");
+					ShowPlayerDialog(playerid, DIALOG_UPDATES, DIALOG_STYLE_MSGBOX, DIALOG_CAPTION, "Vending Creator & Vending Include created by Larceny\n\nFor new updates or report a bug/suggestion go to:\nhttps://github.com/Larceny-/SA-MP-Vending-Machine", "Back", "");
 					PlaySelectSound(playerid);
 					return 1;
 				}
