@@ -32,7 +32,7 @@
 		Y_Less - ALS Hooking method
 
 	Version:
-		1.0
+		1.1
 */
 
 //------------------------------------------------------------------------------
@@ -90,8 +90,10 @@ static g_eVendingData[MAX_MACHINES][E_VENDING_DATA];
 //------------------------------------------------------------------------------
 
 forward OnPlayerUseVendingMachine(playerid, machineid);
+#if !defined NO_SPRUNK_ACTION
 forward OnPlayerDrinkSprunk(playerid);
 forward ven_SetPlayerAnimation(playerid);
+#endif
 
 //------------------------------------------------------------------------------
 
@@ -273,15 +275,18 @@ public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 			if(g_eVendingData[i][E_VENDING_TYPE] == MACHINE_SNACK) PlayerPlaySound(playerid, 42601, 0.0, 0.0, 0.0);
 			else PlayerPlaySound(playerid, 42600, 0.0, 0.0, 0.0);
 			OnPlayerUseVendingMachine(playerid, i);
-			SetTimerEx("ven_SetPlayerAnimation", 2500, false, "i", playerid);
+			#if !defined NO_SPRUNK_ACTION
+			if(g_eVendingData[i][E_VENDING_TYPE] == MACHINE_SPRUNK) SetTimerEx("ven_SetPlayerAnimation", 2500, false, "i", playerid);
+			#endif
 		}
 	}
-	
-	if((newkeys & KEY_FIRE) && (GetPVarInt(playerid, "ven_lastDrink") < GetTickCount()) && (GetPlayerSpecialAction(playerid) == SPECIAL_ACTION_DRINK_SPRUNK))
+	#if !defined NO_SPRUNK_ACTION
+	else if((newkeys & KEY_FIRE) && (GetPVarInt(playerid, "ven_lastDrink") < GetTickCount()) && (GetPlayerSpecialAction(playerid) == SPECIAL_ACTION_DRINK_SPRUNK))
 	{
 		OnPlayerDrinkSprunk(playerid);
 		SetPVarInt(playerid, "ven_lastDrink", GetTickCount() + 2350);
 	}
+	#endif
 	#if defined inc_Ven_OnPlayerKeyStateChange
 		return inc_Ven_OnPlayerKeyStateChange(playerid, newkeys, oldkeys);
 	#else
@@ -300,11 +305,11 @@ public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 #endif
 
 //------------------------------------------------------------------------------
-
+#if !defined NO_SPRUNK_ACTION
 public ven_SetPlayerAnimation(playerid)
 {
 	SetPlayerSpecialAction(playerid, SPECIAL_ACTION_DRINK_SPRUNK);
 	return 1;
 }
-
+#endif
 //------------------------------------------------------------------------------
