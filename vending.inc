@@ -8,7 +8,7 @@
 
 	License:
 		The MIT License (MIT)
-		Copyright (c) 2014 WiRR-
+		Copyright (c) 2014 Larceny
 		Permission is hereby granted, free of charge, to any person obtaining a copy
 		of this software and associated documentation files (the "Software"), to deal
 		in the Software without restriction, including without limitation the rights
@@ -26,7 +26,7 @@
 		SOFTWARE.
 
 	Author:
-		WiRR
+		Larceny
 
 	Contributors:
 		Y_Less - ALS Hooking method
