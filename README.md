@@ -3,7 +3,7 @@ SA-MP-Vending-Machine
 
 A SA-MP include that creates server-sided vending machines that gives you full control of the in-game machines. You can create machines everywhere you want.
 
-**This doesn't work with the single-player machines, you have to remove them and create new.**
+**This will automatic replace the single-player machines.**
 
 Creating Machine
 ================
@@ -28,6 +28,12 @@ main()
 
 public OnPlayerUseVendingMachine(playerid, machineid)
 { // Called when the player use the machine.
+	if(GetPlayerMoney(playerid) < 1)
+	{// If the player has no money.
+		SendClientMessage(playerid, COLOR_ERROR, "* You don't have enough money.");
+		return 0;
+	}
+	
 	// Restore 10% of player's health and takes 1$.
 	new Float:health;
 	GetPlayerHealth(playerid, health);
