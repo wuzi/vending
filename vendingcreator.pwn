@@ -32,7 +32,7 @@
 		Y_Less - GetXYInFrontOfPlayer function
 
 	Version:
-		1.3
+		1.4
 */
 
 //------------------------------------------------------------------------------
@@ -47,10 +47,11 @@
 #define DIALOG_MACHINE		2356
 #define DIALOG_UPDATES		2357
 #define DIALOG_EDITOR		2358
-#define DIALOG_CAPTION		"Machine Editor 1.2"
+#define DIALOG_CAPTION		"Machine Editor 1.4"
 #define DIALOG_INFO			"1.\tCreate a Machine\n2.\tEdit nearest machine\n3.\tDelete nearest machine\n4.\tGo to machine\n5.\tExport nearest machine\n6.\tExport all machine\n7.\tUpdates"
 
-#define COLOR_INFO			0x00a4a7ff
+#define COLOR_WHITE			0xffffffff
+#define COLOR_INFO			0x67ff22ff
 #define COLOR_ERROR			0xff4040ff
 
 #define PlaySelectSound(%0)	PlayerPlaySound(%0,1083,0.0,0.0,0.0)
@@ -71,7 +72,7 @@ new gPlayerData[MAX_PLAYERS][E_VC_PLAYER];
 public OnFilterScriptInit()
 {
 	printf("- Machine Creator loaded.");
-	SendClientMessageToAll(COLOR_INFO, "* /machine to open machine editor.");
+	SendClientMessageToAll(COLOR_WHITE, "* {67ff22}/machine{ffffff} to open machine editor.");
 	for(new i; i < MAX_PLAYERS; i++)
 	{
 		if(!IsPlayerConnected(i))
@@ -95,7 +96,7 @@ public OnFilterScriptExit()
 
 public OnPlayerSpawn(playerid)
 {
-	SendClientMessage(playerid, COLOR_INFO, "* /machine to open machine editor.");
+	SendClientMessage(playerid, COLOR_WHITE, "* {67ff22}/machine{ffffff} to open machine editor.");
 	return 1;
 }
 
@@ -142,7 +143,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			gPlayerData[playerid][E_VC_PLAYER_IS_EDITING] = true;
 
 			EditObject(playerid, GetMachineObjectID(gPlayerData[playerid][E_VC_PLAYER_VENDING_ID]));
-			SendClientMessage(playerid, COLOR_INFO, "* Edit the machine position and save.");
+			SendClientMessage(playerid, COLOR_WHITE, "* {67ff22}Edit{ffffff} the machine position and {67ff22}save{ffffff}.");
 			PlaySelectSound(playerid);
 		}
 		case DIALOG_EDITOR:
@@ -315,7 +316,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			        fclose(vendingFile);
 
 			        PlaySelectSound(playerid);
-			        SendClientMessage(playerid, COLOR_INFO, "* Nearest machine saved to scriptfiles/vending.txt");
+			        SendClientMessage(playerid, COLOR_WHITE, "* {67ff22}Nearest machine saved{ffffff} to scriptfiles/vending.txt.");
 			        return 1;
 				}
 				case 5: // Export all vendings
@@ -353,7 +354,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					if(count != 0)
 					{
 						PlaySelectSound(playerid);
-			        	SendClientMessage(playerid, COLOR_INFO, "* All machines saved to scriptfiles/vending.txt");						
+			        	SendClientMessage(playerid, COLOR_WHITE, "* {67ff22}All machines saved{ffffff} to scriptfiles/vending.txt");						
 					}
 					else
 					{
@@ -455,6 +456,12 @@ public OnPlayerEditObject(playerid, playerobject, objectid, response, Float:fX, 
 
 public OnPlayerUseVendingMachine(playerid, machineid)
 {
+	if(GetPlayerMoney(playerid) < 1)
+	{
+		SendClientMessage(playerid, COLOR_ERROR, "* You don't have enough money.");
+		return 0;
+	}
+
 	new Float:health;
 	GetPlayerHealth(playerid, health);
 
@@ -463,6 +470,10 @@ public OnPlayerUseVendingMachine(playerid, machineid)
 
 	SetPlayerHealth(playerid, health);
 	GivePlayerMoney(playerid, -1);
+
+	new message[128];
+	format(message, 128, "* You used the machineid {67ff22}%d{ffffff}.", machineid);
+	SendClientMessage(playerid, COLOR_WHITE, message);
 	return 1;
 }
 
@@ -477,7 +488,7 @@ public OnPlayerDrinkSprunk(playerid)
 	else health += 10.0;
 
 	SetPlayerHealth(playerid, health);
-	SendClientMessage(playerid, COLOR_INFO, "* You drank the sprunk. (+10HP)");
+	SendClientMessage(playerid, COLOR_WHITE, "* You drank the {67ff22}sprunk{ffffff}. ({67ff22}+{ffffff}10HP)");
 	return 1;
 }
 
