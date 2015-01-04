@@ -32,7 +32,7 @@
 		Y_Less - ALS Hooking method
 
 	Version:
-		1.5
+		1.5.2
 */
 
 //------------------------------------------------------------------------------
@@ -325,7 +325,7 @@ GetXYInFrontOfVending(machineid, &Float:x, &Float:y, Float:distance)
 
 public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 {
-	if(newkeys & KEY_SECONDARY_ATTACK && GetPlayerAnimationIndex(playerid) != 1660)
+	if((newkeys & KEY_SECONDARY_ATTACK) && (GetPlayerAnimationIndex(playerid) != 1660))
 	{
 		for(new i; i < MAX_MACHINES; i++)
 		{
@@ -338,13 +338,17 @@ public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 				continue;
 
 			SetPlayerFacingAngle(playerid, g_eVendingData[i][E_VENDING_RZ]);
-			ApplyAnimation(playerid, "VENDING", "VEND_USE", 10.0, 0, 0, 0, 0, 0, 1);
-			if(g_eVendingData[i][E_VENDING_TYPE] == MACHINE_SNACK) PlayerPlaySound(playerid, 42601, 0.0, 0.0, 0.0);
-			else PlayerPlaySound(playerid, 42600, 0.0, 0.0, 0.0);
-			OnPlayerUseVendingMachine(playerid, i);
-			#if !defined NO_SPRUNK_ACTION
-			if(g_eVendingData[i][E_VENDING_TYPE] == MACHINE_SPRUNK) SetTimerEx("ven_SetPlayerAnimation", 2500, false, "i", playerid);
-			#endif
+			if(OnPlayerUseVendingMachine(playerid, i) != 0)
+			{
+				ApplyAnimation(playerid, "VENDING", "VEND_USE", 10.0, 0, 0, 0, 0, 0, 1);
+				if(g_eVendingData[i][E_VENDING_TYPE] == MACHINE_SNACK) PlayerPlaySound(playerid, 42601, 0.0, 0.0, 0.0);
+				else PlayerPlaySound(playerid, 42600, 0.0, 0.0, 0.0);
+			
+				#if !defined NO_SPRUNK_ACTION
+				if(g_eVendingData[i][E_VENDING_TYPE] == MACHINE_SPRUNK) SetTimerEx("ven_SetPlayerAnimation", 2500, false, "i", playerid);
+				#endif
+			}
+			else ClearAnimations(playerid);
 		}
 	}
 	#if !defined NO_SPRUNK_ACTION
