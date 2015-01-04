@@ -3,7 +3,7 @@ SA-MP-Vending-Machine
 
 A SA-MP include that creates server-sided vending machines that gives you full control of the in-game machines. You can create machines everywhere you want.
 
-**This will automatic replace the single-player machines.**(since 1.6)
+**This will automatic replace the single-player machines.** (since 1.6)
 
 Creating Machine
 ================
