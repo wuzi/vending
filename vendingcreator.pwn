@@ -32,7 +32,7 @@
 		Y_Less - GetXYInFrontOfPlayer function
 
 	Version:
-		1.4
+		1.4.1
 */
 
 //------------------------------------------------------------------------------
@@ -45,10 +45,9 @@
 //------------------------------------------------------------------------------
 
 #define DIALOG_MACHINE		2356
-#define DIALOG_UPDATES		2357
 #define DIALOG_EDITOR		2358
 #define DIALOG_CAPTION		"Machine Editor 1.4"
-#define DIALOG_INFO			"1.\tCreate a Machine\n2.\tEdit nearest machine\n3.\tDelete nearest machine\n4.\tGo to machine\n5.\tExport nearest machine\n6.\tExport all machine\n7.\tUpdates"
+#define DIALOG_INFO			"1.\tCreate a Machine\n2.\tEdit nearest machine\n3.\tDelete nearest machine\n4.\tGo to machine\n5.\tExport nearest machine\n6.\tExport all machine"
 
 #define COLOR_WHITE			0xffffffff
 #define COLOR_INFO			0x67ff22ff
@@ -364,12 +363,6 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					}
 					return 1;
 				}
-				case 6: // Updates
-				{
-					ShowPlayerDialog(playerid, DIALOG_UPDATES, DIALOG_STYLE_MSGBOX, DIALOG_CAPTION, "Vending Creator & Vending Include created by Larceny\n\nFor new updates or report a bug/suggestion go to:\nhttps://github.com/Larceny-/SA-MP-Vending-Machine", "Back", "");
-					PlaySelectSound(playerid);
-					return 1;
-				}
 			}
 		}
 		case DIALOG_EDITOR+1:
@@ -396,12 +389,6 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 
 			SetPlayerPos(playerid, X+1.0, Y+1.0, Z+1.0);
 
-			PlaySelectSound(playerid);
-			return 1;
-		}
-		case DIALOG_UPDATES:
-		{
-			ShowPlayerDialog(playerid, DIALOG_EDITOR, DIALOG_STYLE_LIST, DIALOG_CAPTION, DIALOG_INFO, "Select", "Cancel");
 			PlaySelectSound(playerid);
 			return 1;
 		}
