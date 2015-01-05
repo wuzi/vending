@@ -32,7 +32,7 @@
 		Y_Less - ALS Hooking method
 
 	Version:
-		1.7
+		1.7.1
 */
 
 //------------------------------------------------------------------------------
@@ -61,7 +61,7 @@
 //------------------------------------------------------------------------------
 
 /*Natives
-native CreateMachine(objectid, Float:x, Float:y, Float:z, Float:rx, Float:ry, Float:rz);
+native CreateMachine(modelid, Float:x, Float:y, Float:z, Float:rx, Float:ry, Float:rz);
 native OnPlayerUseMachine(playerid, machineid);
 native GetMachineRot(machineid, &Float:rx, &Float:ry, &Float:rz);
 native SetMachineRot(machineid, Float:rx, Float:ry, Float:rz);
@@ -70,10 +70,6 @@ native SetMachinePos(machineid, Float:x, Float:y, Float:z);
 native DestroyMachine(machineid);
 native GetMachineType(machineid);
 native IsValidMachine(machineid);*/
-
-//------------------------------------------------------------------------------
-
-
 
 //------------------------------------------------------------------------------
 
