@@ -12,7 +12,7 @@
 		Permission is hereby granted, free of charge, to any person obtaining a copy
 		of this software and associated documentation files (the "Software"), to deal
 		in the Software without restriction, including without limitation the rights
-		to use, copy, modiY, merge, publish, distribute, sublicense, and/or sell
+		to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 		copies of the Software, and to permit persons to whom the Software is
 		furnished to do so, subject to the following conditions:
 		The above copyright notice and this permission notice shall be included in all
@@ -32,7 +32,7 @@
 		Y_Less - ALS Hooking method
 
 	Version:
-		1.6.1
+		1.7
 */
 
 //------------------------------------------------------------------------------
@@ -70,6 +70,10 @@ native SetMachinePos(machineid, Float:x, Float:y, Float:z);
 native DestroyMachine(machineid);
 native GetMachineType(machineid);
 native IsValidMachine(machineid);*/
+
+//------------------------------------------------------------------------------
+
+
 
 //------------------------------------------------------------------------------
 
@@ -164,7 +168,7 @@ forward ven_SetPlayerAnimation(playerid);
 
 //------------------------------------------------------------------------------
 
-stock CreateMachine(objectid, Float:x, Float:y, Float:z, Float:rx, Float:ry, Float:rz)
+stock CreateMachine(modelid, Float:x, Float:y, Float:z, Float:rx, Float:ry, Float:rz)
 {
 	new machineid = GetFreeMachineID();
 
@@ -174,7 +178,7 @@ stock CreateMachine(objectid, Float:x, Float:y, Float:z, Float:rx, Float:ry, Flo
 		return 0;
 	}
 
-	switch(objectid)
+	switch(modelid)
 	{
 		case MACHINE_SPRUNK:
 			g_eVendingData[machineid][E_VENDING_RADIUS] = SPRUNK_RADIUS;
@@ -184,12 +188,16 @@ stock CreateMachine(objectid, Float:x, Float:y, Float:z, Float:rx, Float:ry, Flo
 			g_eVendingData[machineid][E_VENDING_RADIUS] = SODA_RADIUS;
 		default:
 		{
-			printf("ERROR: Invalid vending object id! (Used ID: %i - Valid IDs: 955, 956 or 1302)", objectid);
+			printf("ERROR: Invalid vending object id! (Used ID: %i - Valid IDs: 955, 956 or 1302)", modelid);
 			return 0;
 		}
 	}
 
-	g_eVendingData[machineid][E_VENDING_ID]	= CreateObject(objectid, x, y, z, rx, ry, rz, 300.0);
+	#if defined Streamer_IncludeFileVersion
+		g_eVendingData[machineid][E_VENDING_ID]	= CreateDynamicObject(modelid, x, y, z, rx, ry, rz);
+	#else
+		g_eVendingData[machineid][E_VENDING_ID]	= CreateObject(modelid, x, y, z, rx, ry, rz);
+	#endif
 
 	g_eVendingData[machineid][E_VENDING_X]	= x;
 	g_eVendingData[machineid][E_VENDING_Y]	= y;
@@ -199,7 +207,7 @@ stock CreateMachine(objectid, Float:x, Float:y, Float:z, Float:rx, Float:ry, Flo
 	g_eVendingData[machineid][E_VENDING_RY]	= ry;
 	g_eVendingData[machineid][E_VENDING_RZ]	= rz;
 
-	g_eVendingData[machineid][E_VENDING_TYPE] = objectid;
+	g_eVendingData[machineid][E_VENDING_TYPE] = modelid;
 	return machineid;
 }
 
@@ -210,7 +218,11 @@ stock DestroyMachine(machineid)
 	if(!IsValidMachine(machineid))
 		return 0;
 
-    DestroyObject(g_eVendingData[machineid][E_VENDING_ID]);
+    #if defined Streamer_IncludeFileVersion
+		DestroyDynamicObject(g_eVendingData[machineid][E_VENDING_ID]);
+	#else
+    	DestroyObject(g_eVendingData[machineid][E_VENDING_ID]);
+	#endif
 
     g_eVendingData[machineid][E_VENDING_ID] = INVALID_MACHINE_ID;
 
@@ -257,7 +269,12 @@ stock SetMachinePos(machineid, Float:x, Float:y, Float:z)
 	g_eVendingData[machineid][E_VENDING_X] = x;
 	g_eVendingData[machineid][E_VENDING_Y] = y;
 	g_eVendingData[machineid][E_VENDING_Z] = z;
-	SetObjectPos(g_eVendingData[machineid][E_VENDING_ID], x, y, z);
+
+	#if defined Streamer_IncludeFileVersion
+		SetDynamicObjectPos(g_eVendingData[machineid][E_VENDING_ID], x, y, z);
+	#else
+		SetObjectPos(g_eVendingData[machineid][E_VENDING_ID], x, y, z);
+	#endif
 	return 1;
 }
 
@@ -271,7 +288,13 @@ stock SetMachineRot(machineid, Float:rx, Float:ry, Float:rz)
 	g_eVendingData[machineid][E_VENDING_RX] = rx;
 	g_eVendingData[machineid][E_VENDING_RY] = ry;
 	g_eVendingData[machineid][E_VENDING_RZ] = rz;
-	SetObjectRot(g_eVendingData[machineid][E_VENDING_ID], rx, ry, rz);
+
+
+	#if defined Streamer_IncludeFileVersion
+		SetDynamicObjectRot(g_eVendingData[machineid][E_VENDING_ID], rx, ry, rz);
+	#else
+		SetObjectRot(g_eVendingData[machineid][E_VENDING_ID], rx, ry, rz);
+	#endif
 	return 1;
 }
 
@@ -418,17 +441,6 @@ public OnPlayerConnect(playerid)
 		for(new i; i < sizeof(ve_ma_locations); i++)
 		{
 			CreateMachine(floatround(ve_ma_locations[i][0]), ve_ma_locations[i][1], ve_ma_locations[i][2], ve_ma_locations[i][3], ve_ma_locations[i][4], ve_ma_locations[i][5], ve_ma_locations[i][6]);
-		}
-
-		for(new i; i < MAX_PLAYERS; i++)
-		{
-			if(IsPlayerConnected(i))
-			{
-				for(new j; j < sizeof(ve_ma_locations); j++)
-				{
-					RemoveBuildingForPlayer(i, floatround(ve_ma_locations[j][0]), ve_ma_locations[j][1], ve_ma_locations[j][2], ve_ma_locations[j][3], 0.25);
-				}
-			}
 		}
 
 		#if defined inc_Ven_OnFilterScriptInit
