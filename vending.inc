@@ -32,7 +32,7 @@
 		Y_Less - ALS Hooking method
 
 	Version:
-		1.7.1
+		1.7.2
 */
 
 //------------------------------------------------------------------------------
@@ -115,7 +115,7 @@ static Float:ve_ma_locations[][] =
 	{956.0, -36.148400, -57.87500, 1003.6328, 0.0000, 0.0000, 0.0000, 6.0}, // 24-7 6 					- 24-7
 
 	// Sprunk machines
-	{955.0, 2225.2031, -1153.4219, 1025.9063, 0.000000, 0.0000, 270.0000, 15.0}, // Jefferson Motel 		- Interior
+	{955.0, 2225.2031, -1153.4219, 1025.9063, 0.000000, 0.0000, 270.0000, 15.0}, // Jefferson Motel 	- Interior
 	{955.0, 1789.2109, -1369.2656, 15.164100, 0.000000, 0.0000, 270.000, 0.0}, // Near skate park 		- Los Santos
 	{955.0, 1729.7891, -1943.0469, 12.945300, 0.000000, 0.0000, 0.00000, 0.0}, // Unity Station 		- Los Santos
 	{955.0, 2060.1172, -1897.6406, 12.929700, 0.000000, 0.0000, 0.00000, 0.0}, // Near pizza stack 		- Los Santos
@@ -150,8 +150,8 @@ static Float:ve_ma_locations[][] =
 	{955.0, -19.03910, -57.835900, 1003.6328, 0.000000, 0.0000, 0.0000, 6.00}, // 24-7 6 				- 24-7
 
 	// Soda machines
-	{1302.0, -2420.2188, 984.5781, 44.2969, 3.1416, 0.0000, 90.0000, 0.0}, // Gas Station (left)			- San Fierro
-	{1302.0, -2420.1797, 985.9453, 44.2969, 3.1416, 0.0000, 90.0000, 0.0} // Gas Station (right)			- San Fierro
+	{1302.0, -2420.2188, 984.5781, 44.2969, 3.1416, 0.0000, 90.0000, 0.0}, // Gas Station (left)		- San Fierro
+	{1302.0, -2420.1797, 985.9453, 44.2969, 3.1416, 0.0000, 90.0000, 0.0} // Gas Station (right)		- San Fierro
 };
 
 //------------------------------------------------------------------------------
@@ -192,7 +192,7 @@ stock CreateMachine(modelid, Float:x, Float:y, Float:z, Float:rx, Float:ry, Floa
 	#if defined Streamer_IncludeFileVersion
 		g_eVendingData[machineid][E_VENDING_ID]	= CreateDynamicObject(modelid, x, y, z, rx, ry, rz);
 	#else
-		g_eVendingData[machineid][E_VENDING_ID]	= CreateObject(modelid, x, y, z, rx, ry, rz);
+		g_eVendingData[machineid][E_VENDING_ID]	= CreateObject(modelid, x, y, z, rx, ry, rz, 300.0);
 	#endif
 
 	g_eVendingData[machineid][E_VENDING_X]	= x;
@@ -214,13 +214,13 @@ stock DestroyMachine(machineid)
 	if(!IsValidMachine(machineid))
 		return 0;
 
-    #if defined Streamer_IncludeFileVersion
-		DestroyDynamicObject(g_eVendingData[machineid][E_VENDING_ID]);
+	#if defined Streamer_IncludeFileVersion
+	DestroyDynamicObject(g_eVendingData[machineid][E_VENDING_ID]);
 	#else
-    	DestroyObject(g_eVendingData[machineid][E_VENDING_ID]);
+	DestroyObject(g_eVendingData[machineid][E_VENDING_ID]);
 	#endif
 
-    g_eVendingData[machineid][E_VENDING_ID] = INVALID_MACHINE_ID;
+	g_eVendingData[machineid][E_VENDING_ID] = INVALID_MACHINE_ID;
 
 	g_eVendingData[machineid][E_VENDING_X] = 0.0;
 	g_eVendingData[machineid][E_VENDING_Y] = 0.0;
@@ -231,7 +231,7 @@ stock DestroyMachine(machineid)
 	g_eVendingData[machineid][E_VENDING_RZ] = 0.0;
 
 	g_eVendingData[machineid][E_VENDING_TYPE] = 0;
-    return 1;
+	return 1;
 }
 
 //------------------------------------------------------------------------------
@@ -267,9 +267,9 @@ stock SetMachinePos(machineid, Float:x, Float:y, Float:z)
 	g_eVendingData[machineid][E_VENDING_Z] = z;
 
 	#if defined Streamer_IncludeFileVersion
-		SetDynamicObjectPos(g_eVendingData[machineid][E_VENDING_ID], x, y, z);
+	SetDynamicObjectPos(g_eVendingData[machineid][E_VENDING_ID], x, y, z);
 	#else
-		SetObjectPos(g_eVendingData[machineid][E_VENDING_ID], x, y, z);
+	SetObjectPos(g_eVendingData[machineid][E_VENDING_ID], x, y, z);
 	#endif
 	return 1;
 }
@@ -287,9 +287,9 @@ stock SetMachineRot(machineid, Float:rx, Float:ry, Float:rz)
 
 
 	#if defined Streamer_IncludeFileVersion
-		SetDynamicObjectRot(g_eVendingData[machineid][E_VENDING_ID], rx, ry, rz);
+	SetDynamicObjectRot(g_eVendingData[machineid][E_VENDING_ID], rx, ry, rz);
 	#else
-		SetObjectRot(g_eVendingData[machineid][E_VENDING_ID], rx, ry, rz);
+	SetObjectRot(g_eVendingData[machineid][E_VENDING_ID], rx, ry, rz);
 	#endif
 	return 1;
 }
