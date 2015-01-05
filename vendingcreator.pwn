@@ -32,7 +32,7 @@
 		Y_Less - GetXYInFrontOfPlayer function
 
 	Version:
-		1.4.1
+		1.5
 */
 
 //------------------------------------------------------------------------------
@@ -46,7 +46,7 @@
 
 #define DIALOG_MACHINE		2356
 #define DIALOG_EDITOR		2358
-#define DIALOG_CAPTION		"Machine Editor 1.4"
+#define DIALOG_CAPTION		"Machine Editor 1.5"
 #define DIALOG_INFO			"1.\tCreate a Machine\n2.\tEdit nearest machine\n3.\tDelete nearest machine\n4.\tGo to machine\n5.\tExport nearest machine\n6.\tExport all machine"
 
 #define COLOR_WHITE			0xffffffff
@@ -87,7 +87,7 @@ public OnFilterScriptInit()
 public OnFilterScriptExit()
 {
 	for(new i; i < MAX_MACHINES; i++)
-		DestroyMachine(i);
+		DestroyVendingMachine(i);
 	return 1;
 }
 
@@ -138,10 +138,10 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			new Float:X, Float:Y, Float:Z;
 			GetPlayerPos(playerid, X, Y, Z);
 			GetXYInFrontOfPlayer(playerid, X, Y, 5.0);
-			gPlayerData[playerid][E_VC_PLAYER_VENDING_ID] = CreateMachine(machinetype, X, Y, Z, 0.00, 0.00, 180.00);
+			gPlayerData[playerid][E_VC_PLAYER_VENDING_ID] = CreateVendingMachine(machinetype, X, Y, Z, 0.00, 0.00, 180.00);
 			gPlayerData[playerid][E_VC_PLAYER_IS_EDITING] = true;
 
-			EditObject(playerid, GetMachineObjectID(gPlayerData[playerid][E_VC_PLAYER_VENDING_ID]));
+			EditObject(playerid, GetVendingMachineObjectID(gPlayerData[playerid][E_VC_PLAYER_VENDING_ID]));
 			SendClientMessage(playerid, COLOR_WHITE, "* {67ff22}Edit{ffffff} the machine position and {67ff22}save{ffffff}.");
 			PlaySelectSound(playerid);
 		}
@@ -158,7 +158,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					PlaySelectSound(playerid);
 					return 1;
 				}
-				case 1: //Edit nearest vending
+				case 1: // Edit nearest vending
 				{
 					new
 						machineid = INVALID_MACHINE_ID,
@@ -172,7 +172,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 						if(!IsValidMachine(i))
 							continue;
 
-						GetMachinePos(i, X, Y, Z);
+						GetVendingMachinePos(i, X, Y, Z);
 						if(GetPlayerDistanceFromPoint(playerid, X, Y, Z) < distance)
 						{
 							distance = GetPlayerDistanceFromPoint(playerid, X, Y, Z);
@@ -190,7 +190,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 
 					gPlayerData[playerid][E_VC_PLAYER_VENDING_ID]	= machineid;
 					gPlayerData[playerid][E_VC_PLAYER_IS_EDITING]	= true;
-					EditObject(playerid, GetMachineObjectID(gPlayerData[playerid][E_VC_PLAYER_VENDING_ID]));
+					EditObject(playerid, GetVendingMachineObjectID(gPlayerData[playerid][E_VC_PLAYER_VENDING_ID]));
 					PlaySelectSound(playerid);
 					return 1;
 				}
@@ -208,7 +208,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 						if(!IsValidMachine(i))
 							continue;
 
-						GetMachinePos(i, X, Y, Z);
+						GetVendingMachinePos(i, X, Y, Z);
 						if(GetPlayerDistanceFromPoint(playerid, X, Y, Z) < distance)
 						{
 							distance = GetPlayerDistanceFromPoint(playerid, X, Y, Z);
@@ -224,7 +224,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 						return 1;
 					}
 
-					DestroyMachine(machineid);
+					DestroyVendingMachine(machineid);
 					PlaySelectSound(playerid);
 					return 1;
 				}
@@ -242,7 +242,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 						if(!IsValidMachine(i))
 							continue;
 
-						GetMachinePos(i, X, Y, Z);
+						GetVendingMachinePos(i, X, Y, Z);
 
 						new machineInfo[40];
 						format(machineInfo, 40, "MachineID: %d\tDistance: %.2f\n", i, GetPlayerDistanceFromPoint(playerid, X, Y, Z));
@@ -278,7 +278,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 						if(!IsValidMachine(i))
 							continue;
 
-						GetMachinePos(i, X, Y, Z);
+						GetVendingMachinePos(i, X, Y, Z);
 						if(GetPlayerDistanceFromPoint(playerid, X, Y, Z) < distance)
 						{
 							distance = GetPlayerDistanceFromPoint(playerid, X, Y, Z);
@@ -294,11 +294,11 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 						return 1;
 					}
 
-					GetMachinePos(machineid, X, Y, Z);
-					GetMachineRot(machineid, rX, rY, rZ);
+					GetVendingMachinePos(machineid, X, Y, Z);
+					GetVendingMachineRot(machineid, rX, rY, rZ);
 
 					new machineName[32];
-					switch(GetMachineType(machineid))
+					switch(GetVendingMachineType(machineid))
 					{
 						case MACHINE_SPRUNK:
 							machineName = "MACHINE_SPRUNK";
@@ -310,7 +310,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 
 					new textToSave[128];
 					new File:vendingFile = fopen("vending.txt", io_append);
-			        format(textToSave, 256, "CreateMachine(%s, %f, %f, %f, %f, %f, %f);\n", machineName, X, Y, Z, rX, rY, rZ);
+			        format(textToSave, 256, "CreateVendingMachine(%s, %f, %f, %f, %f, %f, %f);\n", machineName, X, Y, Z, rX, rY, rZ);
 			        fwrite(vendingFile, textToSave);
 			        fclose(vendingFile);
 
@@ -329,11 +329,11 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 						count++;
 
 						new Float:X, Float:Y, Float:Z, Float:rX, Float:rY, Float:rZ;
-						GetMachinePos(i, X, Y, Z);
-						GetMachineRot(i, rX, rY, rZ);
+						GetVendingMachinePos(i, X, Y, Z);
+						GetVendingMachineRot(i, rX, rY, rZ);
 
 						new machineName[32];
-						switch(GetMachineType(i))
+						switch(GetVendingMachineType(i))
 						{
 							case MACHINE_SPRUNK:
 								machineName = "MACHINE_SPRUNK";
@@ -345,7 +345,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 
 						new textToSave[128];
 						new File:vendingFile = fopen("vending.txt", io_append);
-				        format(textToSave, 256, "CreateMachine(%s, %f, %f, %f, %f, %f, %f);\n", machineName, X, Y, Z, rX, rY, rZ);
+				        format(textToSave, 256, "CreateVendingMachine(%s, %f, %f, %f, %f, %f, %f);\n", machineName, X, Y, Z, rX, rY, rZ);
 			        	fwrite(vendingFile, textToSave);
 			        	fclose(vendingFile);
 					}
@@ -385,7 +385,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			}
 
 			new	Float:X, Float:Y, Float:Z;
-			GetMachinePos(machineidList[listitem], X, Y, Z);
+			GetVendingMachinePos(machineidList[listitem], X, Y, Z);
 
 			SetPlayerPos(playerid, X+1.0, Y+1.0, Z+1.0);
 
@@ -414,10 +414,10 @@ public OnPlayerEditObject(playerid, playerobject, objectid, response, Float:fX, 
  
 	if(response == EDIT_RESPONSE_FINAL)
 	{
-		if(objectid == GetMachineObjectID(gPlayerData[playerid][E_VC_PLAYER_VENDING_ID]))
+		if(objectid == GetVendingMachineObjectID(gPlayerData[playerid][E_VC_PLAYER_VENDING_ID]))
 		{
-			SetMachinePos(gPlayerData[playerid][E_VC_PLAYER_VENDING_ID], fX, fY, fZ);
-			SetMachineRot(gPlayerData[playerid][E_VC_PLAYER_VENDING_ID], fRotX, fRotY, fRotZ);
+			SetVendingMachinePos(gPlayerData[playerid][E_VC_PLAYER_VENDING_ID], fX, fY, fZ);
+			SetVendingMachineRot(gPlayerData[playerid][E_VC_PLAYER_VENDING_ID], fRotX, fRotY, fRotZ);
 		}
 		gPlayerData[playerid][E_VC_PLAYER_IS_EDITING] = false;
 		PlaySelectSound(playerid);
@@ -459,7 +459,7 @@ public OnPlayerUseVendingMachine(playerid, machineid)
 	GivePlayerMoney(playerid, -1);
 
 	new message[128];
-	format(message, 128, "* You used the machineid {67ff22}%d{ffffff}.", machineid);
+	format(message, 128, "* You've used the machineid {67ff22}%d{ffffff}.", machineid);
 	SendClientMessage(playerid, COLOR_WHITE, message);
 	return 1;
 }
@@ -475,7 +475,7 @@ public OnPlayerDrinkSprunk(playerid)
 	else health += 10.0;
 
 	SetPlayerHealth(playerid, health);
-	SendClientMessage(playerid, COLOR_WHITE, "* You drank the {67ff22}sprunk{ffffff}. ({67ff22}+{ffffff}10HP)");
+	SendClientMessage(playerid, COLOR_WHITE, "* You've drank the {67ff22}sprunk{ffffff}. ({67ff22}+{ffffff}10HP)");
 	return 1;
 }
 
