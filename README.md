@@ -23,7 +23,7 @@ new gVending;
 
 main()
 {
-	gVending = CreateMachine(MACHINE_SPRUNK, 1755.348144, -2113.468750, 12.692808, 0.000000, 0.000000, 180.000000);
+	gVending = CreateVendingMachine(MACHINE_SPRUNK, 1755.348144, -2113.468750, 12.692808, 0.000000, 0.000000, 180.000000);
 }
 
 public OnPlayerUseVendingMachine(playerid, machineid)
