@@ -29,10 +29,11 @@
 		Larceny
 
 	Contributors:
-		Y_Less - ALS Hooking method
+		Y_Less	- ALS Hooking method
+		Abagail	- Vending machine material suggestion
 
 	Version:
-		1.7.2
+		1.8
 */
 
 //------------------------------------------------------------------------------
@@ -61,15 +62,33 @@
 //------------------------------------------------------------------------------
 
 /*Natives
-native CreateMachine(modelid, Float:x, Float:y, Float:z, Float:rx, Float:ry, Float:rz);
+native CreateVendingMachine(modelid, Float:x, Float:y, Float:z, Float:rx, Float:ry, Float:rz);
+native GetVendingMachineRot(machineid, &Float:rx, &Float:ry, &Float:rz);
+native SetVendingMachineRot(machineid, Float:rx, Float:ry, Float:rz);
+native GetVendingMachinePos(machineid, &Float:x, &Float:y, &Float:z);
+native SetVendingMachinePos(machineid, Float:x, Float:y, Float:z);
+native SetVendingMachineColor(machineid, color);
 native OnPlayerUseMachine(playerid, machineid);
-native GetMachineRot(machineid, &Float:rx, &Float:ry, &Float:rz);
-native SetMachineRot(machineid, Float:rx, Float:ry, Float:rz);
-native GetMachinePos(machineid, &Float:x, &Float:y, &Float:z);
-native SetMachinePos(machineid, Float:x, Float:y, Float:z);
-native DestroyMachine(machineid);
-native GetMachineType(machineid);
-native IsValidMachine(machineid);*/
+native GetVendingMachineColor(machineid);
+native DestroyVendingMachine(machineid);
+native GetVendingMachineType(machineid);
+native IsValidVendingMachine(machineid);*/
+
+//------------------------------------------------------------------------------
+
+// Temporary:
+
+#define CreateMachine 		CreateVendingMachine
+#define DestroyMachine 		DestroyVendingMachine
+
+#define GetMachineRot 		GetVendingMachineRot
+#define SetMachineRot 		SetVendingMachineRot
+
+#define GetMachinePos 		GetVendingMachinePos
+#define SetMachinePos 		SetVendingMachinePos
+
+#define GetMachineType 		GetVendingMachineType
+#define IsValidMachine 		IsValidVendingMachine
 
 //------------------------------------------------------------------------------
 
@@ -82,6 +101,7 @@ enum E_VENDING_DATA
 	Float:E_VENDING_RY,
 	Float:E_VENDING_RZ,
 	Float:E_VENDING_RADIUS,
+	E_VENDING_COLOR,
 	E_VENDING_TYPE,
 	E_VENDING_ID
 }
@@ -164,7 +184,7 @@ forward ven_SetPlayerAnimation(playerid);
 
 //------------------------------------------------------------------------------
 
-stock CreateMachine(modelid, Float:x, Float:y, Float:z, Float:rx, Float:ry, Float:rz)
+stock CreateVendingMachine(modelid, Float:x, Float:y, Float:z, Float:rx, Float:ry, Float:rz)
 {
 	new machineid = GetFreeMachineID();
 
@@ -209,9 +229,9 @@ stock CreateMachine(modelid, Float:x, Float:y, Float:z, Float:rx, Float:ry, Floa
 
 //------------------------------------------------------------------------------
 
-stock DestroyMachine(machineid)
+stock DestroyVendingMachine(machineid)
 {
-	if(!IsValidMachine(machineid))
+	if(!IsValidVendingMachine(machineid))
 		return 0;
 
 	#if defined Streamer_IncludeFileVersion
@@ -236,12 +256,34 @@ stock DestroyMachine(machineid)
 
 //------------------------------------------------------------------------------
 
-stock IsValidMachine(machineid)
+stock SetVendingMachineColor(machineid, color)
+{
+	if(!IsValidVendingMachine(machineid))
+		return 0;
+
+	#if defined Streamer_IncludeFileVersion
+	SetDynamicObjectMaterial(g_eVendingData[machineid][E_VENDING_ID], 0, -1, "none", "none", color);
+	#else
+	SetObjectMaterial(g_eVendingData[machineid][E_VENDING_ID], 0, -1, "none", "none", color);
+	#endif
+
+	g_eVendingData[machineid][E_VENDING_COLOR] = color;
+	return 1;
+}
+
+//------------------------------------------------------------------------------
+
+stock GetVendingMachineColor(machineid)
+	return g_eVendingData[machineid][E_VENDING_COLOR];
+
+//------------------------------------------------------------------------------
+
+stock IsValidVendingMachine(machineid)
 	return !(g_eVendingData[machineid][E_VENDING_X] == 0.0 && g_eVendingData[machineid][E_VENDING_Y] == 0.0);
 
 //------------------------------------------------------------------------------
 
-stock GetMachineType(machineid)
+stock GetVendingMachineType(machineid)
 	return g_eVendingData[machineid][E_VENDING_TYPE];
 
 //------------------------------------------------------------------------------
@@ -257,9 +299,9 @@ stock GetFreeMachineID()
 
 //------------------------------------------------------------------------------
 
-stock SetMachinePos(machineid, Float:x, Float:y, Float:z)
+stock SetVendingMachinePos(machineid, Float:x, Float:y, Float:z)
 {
-	if(!IsValidMachine(machineid))
+	if(!IsValidVendingMachine(machineid))
 		return 0;
 
 	g_eVendingData[machineid][E_VENDING_X] = x;
@@ -276,9 +318,9 @@ stock SetMachinePos(machineid, Float:x, Float:y, Float:z)
 
 //------------------------------------------------------------------------------
 
-stock SetMachineRot(machineid, Float:rx, Float:ry, Float:rz)
+stock SetVendingMachineRot(machineid, Float:rx, Float:ry, Float:rz)
 {
-	if(!IsValidMachine(machineid))
+	if(!IsValidVendingMachine(machineid))
 		return 0;
 
 	g_eVendingData[machineid][E_VENDING_RX] = rx;
@@ -296,9 +338,9 @@ stock SetMachineRot(machineid, Float:rx, Float:ry, Float:rz)
 
 //------------------------------------------------------------------------------
 
-stock GetMachinePos(machineid, &Float:x, &Float:y, &Float:z)
+stock GetVendingMachinePos(machineid, &Float:x, &Float:y, &Float:z)
 {
-	if(!IsValidMachine(machineid))
+	if(!IsValidVendingMachine(machineid))
 		return 0;
 
 	x = g_eVendingData[machineid][E_VENDING_X];
@@ -309,9 +351,9 @@ stock GetMachinePos(machineid, &Float:x, &Float:y, &Float:z)
 
 //------------------------------------------------------------------------------
 
-stock GetMachineRot(machineid, &Float:rx, &Float:ry, &Float:rz)
+stock GetVendingMachineRot(machineid, &Float:rx, &Float:ry, &Float:rz)
 {
-	if(!IsValidMachine(machineid))
+	if(!IsValidVendingMachine(machineid))
 		return 0;
 
 	rx = g_eVendingData[machineid][E_VENDING_RX];
@@ -322,7 +364,7 @@ stock GetMachineRot(machineid, &Float:rx, &Float:ry, &Float:rz)
 
 //------------------------------------------------------------------------------
 
-stock GetMachineObjectID(machineid)
+stock GetVendingMachineObjectID(machineid)
 	return g_eVendingData[machineid][E_VENDING_ID];
 
 //------------------------------------------------------------------------------
@@ -330,8 +372,8 @@ stock GetMachineObjectID(machineid)
 GetXYInFrontOfVending(machineid, &Float:x, &Float:y, Float:distance)
 {
 	new Float:a, Float:z;
-	GetMachineRot(machineid, x, y, a);
-	GetMachinePos(machineid, x, y, z);
+	GetVendingMachineRot(machineid, x, y, a);
+	GetVendingMachinePos(machineid, x, y, z);
 
 	a += 180.0;
 	if(a > 359.0) a -= 359.0;
@@ -348,7 +390,7 @@ public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 	{
 		for(new i; i < MAX_MACHINES; i++)
 		{
-			if(!IsValidMachine(i))
+			if(!IsValidVendingMachine(i))
 				continue;
 
 			new Float:x, Float:y;
@@ -436,7 +478,7 @@ public OnPlayerConnect(playerid)
 	{
 		for(new i; i < sizeof(ve_ma_locations); i++)
 		{
-			CreateMachine(floatround(ve_ma_locations[i][0]), ve_ma_locations[i][1], ve_ma_locations[i][2], ve_ma_locations[i][3], ve_ma_locations[i][4], ve_ma_locations[i][5], ve_ma_locations[i][6]);
+			CreateVendingMachine(floatround(ve_ma_locations[i][0]), ve_ma_locations[i][1], ve_ma_locations[i][2], ve_ma_locations[i][3], ve_ma_locations[i][4], ve_ma_locations[i][5], ve_ma_locations[i][6]);
 		}
 
 		#if defined inc_Ven_OnFilterScriptInit
@@ -460,7 +502,7 @@ public OnPlayerConnect(playerid)
 	{
 		for(new i; i < sizeof(ve_ma_locations); i++)
 		{
-			CreateMachine(floatround(ve_ma_locations[i][0]), ve_ma_locations[i][1], ve_ma_locations[i][2], ve_ma_locations[i][3], ve_ma_locations[i][4], ve_ma_locations[i][5], ve_ma_locations[i][6]);
+			CreateVendingMachine(floatround(ve_ma_locations[i][0]), ve_ma_locations[i][1], ve_ma_locations[i][2], ve_ma_locations[i][3], ve_ma_locations[i][4], ve_ma_locations[i][5], ve_ma_locations[i][6]);
 		}
 
 		#if defined inc_Ven_OnGameModeInit
