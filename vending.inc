@@ -30,7 +30,7 @@
 
 	Contributors:
 		Y_Less	- ALS Hooking method
-		Abagail	- Vending machine material suggestion
+		Abagail	- Vending machine material and color suggestion
 
 	Version:
 		1.8
