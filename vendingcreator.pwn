@@ -32,7 +32,7 @@
 		Y_Less - GetXYInFrontOfPlayer function
 
 	Version:
-		1.5
+		1.6
 */
 
 //------------------------------------------------------------------------------
@@ -46,8 +46,9 @@
 
 #define DIALOG_MACHINE		2356
 #define DIALOG_EDITOR		2358
-#define DIALOG_CAPTION		"Machine Editor 1.5"
-#define DIALOG_INFO			"1.\tCreate a Machine\n2.\tEdit nearest machine\n3.\tDelete nearest machine\n4.\tGo to machine\n5.\tExport nearest machine\n6.\tExport all machine"
+#define DIALOG_COLOR		2360
+#define DIALOG_CAPTION		"Machine Editor 1.6"
+#define DIALOG_INFO			"1.\tCreate a Machine\n2.\tEdit nearest machine pos\n3.\tEdit nearest machine color\n4.\tDelete nearest machine\n5.\tGo to machine\n6.\tExport nearest machine\n7.\tExport all machine"
 
 #define COLOR_WHITE			0xffffffff
 #define COLOR_INFO			0x67ff22ff
@@ -158,7 +159,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					PlaySelectSound(playerid);
 					return 1;
 				}
-				case 1: // Edit nearest vending
+				case 1: // Edit nearest vending pos
 				{
 					new
 						machineid = INVALID_MACHINE_ID,
@@ -182,7 +183,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 
 					if(machineid == INVALID_MACHINE_ID)
 					{
-						SendClientMessage(playerid, COLOR_ERROR, "* No machines near you!");
+						SendClientMessage(playerid, COLOR_ERROR, "* No machine near you!");
 						ShowPlayerDialog(playerid, DIALOG_EDITOR, DIALOG_STYLE_LIST, DIALOG_CAPTION, DIALOG_INFO, "Select", "Cancel");
 						PlayErrorSound(playerid);
 						return 1;
@@ -194,7 +195,50 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					PlaySelectSound(playerid);
 					return 1;
 				}
-				case 2: // Delete nearest vending
+				case 2: // Edit nearest vending color
+				{
+					new
+						machineid = INVALID_MACHINE_ID,
+						Float:distance = 20.0,
+						Float:X,
+						Float:Y,
+						Float:Z;
+
+					for(new i; i < MAX_MACHINES; i++)
+					{
+						if(!IsValidMachine(i))
+							continue;
+
+						GetVendingMachinePos(i, X, Y, Z);
+						if(GetPlayerDistanceFromPoint(playerid, X, Y, Z) < distance)
+						{
+							distance = GetPlayerDistanceFromPoint(playerid, X, Y, Z);
+							machineid = i;
+						}
+					}
+
+					if(machineid == INVALID_MACHINE_ID)
+					{
+						SendClientMessage(playerid, COLOR_ERROR, "* No machine near you!");
+						ShowPlayerDialog(playerid, DIALOG_EDITOR, DIALOG_STYLE_LIST, DIALOG_CAPTION, DIALOG_INFO, "Select", "Cancel");
+						PlayErrorSound(playerid);
+						return 1;
+					}
+
+					else if(GetVendingMachineType(machineid) == MACHINE_SNACK)
+					{
+						SendClientMessage(playerid, COLOR_ERROR, "* Can't change color of MACHINE_SNACK type!");
+						ShowPlayerDialog(playerid, DIALOG_EDITOR, DIALOG_STYLE_LIST, DIALOG_CAPTION, DIALOG_INFO, "Select", "Cancel");
+						PlayErrorSound(playerid);
+						return 1;
+					}
+
+					gPlayerData[playerid][E_VC_PLAYER_VENDING_ID]	= machineid;
+					ShowPlayerDialog(playerid, DIALOG_COLOR, DIALOG_STYLE_LIST, DIALOG_CAPTION, "1.\tOriginal\n2.\tBlue\n3.\tGreen\n4.\tYellow\n5.\tRed\n6.\tOrange\n7.\tPurple\n8.\tCyan\n9.\tPink\n10.\tCustom ({67ff22}ARGB{ffffff})", "Select", "Back");
+					PlaySelectSound(playerid);
+					return 1;
+				}
+				case 3: // Delete nearest vending
 				{
 					new
 						machineid = INVALID_MACHINE_ID,
@@ -228,7 +272,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					PlaySelectSound(playerid);
 					return 1;
 				}
-				case 3: //Go to vending
+				case 4: //Go to vending
 				{
 					new
 						Float:X,
@@ -261,7 +305,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					PlaySelectSound(playerid);
 					return 1;
 				}
-				case 4: //Export nearest vending
+				case 5: //Export nearest vending
 				{
 					new
 						machineid = INVALID_MACHINE_ID,
@@ -318,7 +362,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			        SendClientMessage(playerid, COLOR_WHITE, "* {67ff22}Nearest machine saved{ffffff} to scriptfiles/vending.txt.");
 			        return 1;
 				}
-				case 5: // Export all vendings
+				case 6: // Export all vendings
 				{
 					new count;
 					for(new i; i < MAX_MACHINES; i++)
@@ -391,6 +435,56 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 
 			PlaySelectSound(playerid);
 			return 1;
+		}
+		case DIALOG_COLOR:
+		{
+			if(!response)
+			{
+				ShowPlayerDialog(playerid, DIALOG_EDITOR, DIALOG_STYLE_LIST, DIALOG_CAPTION, DIALOG_INFO, "Select", "Cancel");
+				PlayCancelSound(playerid);
+				return 1;
+			}
+
+			PlaySelectSound(playerid);
+
+			switch(listitem)
+			{
+				case 0: SetVendingMachineColor(gPlayerData[playerid][E_VC_PLAYER_VENDING_ID], 0); // Original
+				case 1: SetVendingMachineColor(gPlayerData[playerid][E_VC_PLAYER_VENDING_ID], 0xff00b9e8); // Blue
+				case 2: SetVendingMachineColor(gPlayerData[playerid][E_VC_PLAYER_VENDING_ID], 0xff67ff22); // Green
+				case 3: SetVendingMachineColor(gPlayerData[playerid][E_VC_PLAYER_VENDING_ID], 0xffffd700); // Yellow
+				case 4: SetVendingMachineColor(gPlayerData[playerid][E_VC_PLAYER_VENDING_ID], 0xfff63752); // Red
+				case 5: SetVendingMachineColor(gPlayerData[playerid][E_VC_PLAYER_VENDING_ID], 0xffff8100); // Orange
+				case 6: SetVendingMachineColor(gPlayerData[playerid][E_VC_PLAYER_VENDING_ID], 0xff704992); // Purple
+				case 7: SetVendingMachineColor(gPlayerData[playerid][E_VC_PLAYER_VENDING_ID], 0xff00e5ee); // Cyan
+				case 8: SetVendingMachineColor(gPlayerData[playerid][E_VC_PLAYER_VENDING_ID], 0xffee00e5); // Pink
+				case 9: // Custom (ARGB)
+				{
+					ShowPlayerDialog(playerid, DIALOG_COLOR+1, DIALOG_STYLE_INPUT, DIALOG_CAPTION, "{ffffff}Insert the color (AARRGGBB):\n({ffffff}It is {ff0000}A{67ff22}RGB{ffffff} not {67ff22}RGB{ff0000}A{ffffff})", "Select", "Back");
+					PlaySelectSound(playerid);
+					return 1;
+				}
+			}
+		}
+		case DIALOG_COLOR+1:
+		{
+			if(!response)
+			{
+				ShowPlayerDialog(playerid, DIALOG_COLOR, DIALOG_STYLE_LIST, DIALOG_CAPTION, "1.\tOriginal\n2.\tBlue\n3.\tGreen\n4.\tYellow\n5.\tRed\n6.\tOrange\n7.\tPurple\n8.\tCyan\n9.\tPink\n10.\tCustom ({67ff22}ARGB{ffffff})", "Select", "Back");
+				PlayCancelSound(playerid);
+				return 1;
+			}
+
+			if(strlen(inputtext) != 8)
+			{
+				SendClientMessage(playerid, COLOR_ERROR, "* Invalid format. (AARRGGBB)");
+				ShowPlayerDialog(playerid, DIALOG_COLOR+1, DIALOG_STYLE_INPUT, DIALOG_CAPTION, "{ffffff}Insert the color (AARRGGBB):\n({ffffff}It is {ff0000}A{67ff22}RGB{ffffff} not {67ff22}RGB{ff0000}A{ffffff})", "Select", "Back");
+				PlayErrorSound(playerid);
+				return 1;
+			}
+
+			SetVendingMachineColor(gPlayerData[playerid][E_VC_PLAYER_VENDING_ID], HexToInt(inputtext));
+			PlaySelectSound(playerid);
 		}
 	}
 	return 0;
@@ -514,3 +608,17 @@ ResetPlayerVars(playerid)
 }
 
 //------------------------------------------------------------------------------
+
+stock HexToInt(string[])
+{// Made by Dracoblue
+	new i = 0;
+	new cur = 1;
+	new res = 0;
+	for (i = strlen(string); i > 0; i--)
+	{
+		string[i-1] = toupper(string[i-1]);
+		if (string[i-1] < 58) res = res + cur*(string[i-1] - 48); else res = res + cur*(string[i-1] - 65 + 10);
+		cur = cur*16;
+	}
+	return res;
+}
