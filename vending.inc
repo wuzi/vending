@@ -29,11 +29,11 @@
 		Larceny
 
 	Contributors:
-		Y_Less	- ALS Hooking method
-		Abagail	- Vending machine material and color suggestion
+		Y_Less
+		Abagail
 
 	Version:
-		1.8.5
+		1.9
 */
 
 //------------------------------------------------------------------------------
@@ -520,6 +520,30 @@ public OnPlayerConnect(playerid)
 	#define OnFilterScriptInit inc_Ven_OnFilterScriptInit
 	#if defined inc_Ven_OnFilterScriptInit
 		forward inc_Ven_OnFilterScriptInit();
+	#endif
+
+	public OnFilterScriptExit()
+	{
+		for(new i; i < sizeof(ve_ma_locations); i++)
+		{
+			DestroyVendingMachine(i);
+		}
+
+		#if defined inc_Ven_OnFilterScriptExit
+			return inc_Ven_OnFilterScriptExit();
+		#else
+			return 0;
+		#endif
+	}
+	#if defined _ALS_OnFilterScriptExit
+		#undef OnFilterScriptExit
+	#else
+		#define _ALS_OnFilterScriptExit
+	#endif
+
+	#define OnFilterScriptExit inc_Ven_OnFilterScriptExit
+	#if defined inc_Ven_OnFilterScriptExit
+		forward inc_Ven_OnFilterScriptExit();
 	#endif
 #else
 	public OnGameModeInit()
