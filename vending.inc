@@ -70,7 +70,7 @@ native SetVendingMachineRot(machineid, Float:rx, Float:ry, Float:rz);
 native GetVendingMachinePos(machineid, &Float:x, &Float:y, &Float:z);
 native SetVendingMachinePos(machineid, Float:x, Float:y, Float:z);
 native SetVendingMachineColor(machineid, color);
-native OnPlayerUseMachine(playerid, machineid);
+native OnPlayerUseVendinMachine(playerid, machineid);
 native GetVendingMachineColor(machineid);
 native DestroyVendingMachine(machineid);
 native GetVendingMachineType(machineid);
