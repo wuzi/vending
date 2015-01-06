@@ -49,6 +49,8 @@
 	#define MAX_MACHINES 			128
 #endif
 
+#define OBJECT_TYPE_NORMAL			0
+#define OBJECT_TYPE_DYNAMIC			1
 #define MACHINE_SNACK 				956
 #define MACHINE_SPRUNK 				955
 #define MACHINE_SODA				1302
@@ -290,6 +292,16 @@ stock GetVendingMachineColor(machineid)
 
 //------------------------------------------------------------------------------
 
+stock GetVendingMachineObjectType(machineid)
+{
+       #if defined Streamer_IncludeFileVersion
+		return OBJECT_TYPE_DYNAMIC;
+	#else
+	        return OBJECT_TYPE_NORMAL;
+	#endif
+}
+
+//------------------------------------------------------------------------------
 stock IsValidVendingMachine(machineid)
 	return !(g_eVendingData[machineid][E_VENDING_X] == 0.0 && g_eVendingData[machineid][E_VENDING_Y] == 0.0);
 
