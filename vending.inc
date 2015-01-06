@@ -55,7 +55,7 @@
 
 #define SODA_RADIUS					1.2
 #define SPRUNK_RADIUS				1.05
-#define SNACK_RADIUS				1.0
+#define SNACK_RADIUS				1.05
 
 #define INVALID_MACHINE_ID			-1
 
