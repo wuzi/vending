@@ -33,7 +33,7 @@
 		Abagail	- Vending machine material and color suggestion
 
 	Version:
-		1.8
+		1.8.5
 */
 
 //------------------------------------------------------------------------------
@@ -55,7 +55,7 @@
 
 #define SODA_RADIUS					1.2
 #define SPRUNK_RADIUS				1.05
-#define SNACK_RADIUS				1.05
+#define SNACK_RADIUS				1.0
 
 #define INVALID_MACHINE_ID			-1
 
@@ -258,13 +258,25 @@ stock DestroyVendingMachine(machineid)
 
 stock SetVendingMachineColor(machineid, color)
 {
-	if(!IsValidVendingMachine(machineid))
+	if(!IsValidVendingMachine(machineid) || GetVendingMachineType(machineid) == MACHINE_SNACK)
 		return 0;
 
 	#if defined Streamer_IncludeFileVersion
-	SetDynamicObjectMaterial(g_eVendingData[machineid][E_VENDING_ID], 0, -1, "none", "none", color);
+	if(GetVendingMachineType(machineid) == MACHINE_SODA) {
+		SetDynamicObjectMaterial(g_eVendingData[machineid][E_VENDING_ID], 0, -1, "none", "none", color);
+		SetDynamicObjectMaterial(g_eVendingData[machineid][E_VENDING_ID], 1, -1, "none", "none", color);
+	}
+	else {
+		SetDynamicObjectMaterial(g_eVendingData[machineid][E_VENDING_ID], 0, -1, "none", "none", color);
+	}
 	#else
-	SetObjectMaterial(g_eVendingData[machineid][E_VENDING_ID], 0, -1, "none", "none", color);
+	if(GetVendingMachineType(machineid) == MACHINE_SODA) {
+		SetObjectMaterial(g_eVendingData[machineid][E_VENDING_ID], 0, -1, "none", "none", color);
+		SetObjectMaterial(g_eVendingData[machineid][E_VENDING_ID], 1, -1, "none", "none", color);
+	}
+	else {
+		SetObjectMaterial(g_eVendingData[machineid][E_VENDING_ID], 0, -1, "none", "none", color);
+	}
 	#endif
 
 	g_eVendingData[machineid][E_VENDING_COLOR] = color;
