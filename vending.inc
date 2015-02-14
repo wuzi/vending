@@ -179,6 +179,8 @@ static Float:ve_ma_locations[][] =
 
 //------------------------------------------------------------------------------
 
+forward OnVendingMachineCreation(modelid, Float: x, Float: y, Float: z, Float: rx, Float: ry, Float: rz);
+forward OnVendingMachineDestroyed(machineid);
 forward OnPlayerUseVendingMachine(playerid, machineid);
 #if !defined NO_SPRUNK_ACTION
 forward OnPlayerDrinkSprunk(playerid);
@@ -227,6 +229,7 @@ stock CreateVendingMachine(modelid, Float:x, Float:y, Float:z, Float:rx, Float:r
 	g_eVendingData[machineid][E_VENDING_RZ]	= rz;
 
 	g_eVendingData[machineid][E_VENDING_TYPE] = modelid;
+	CallLocalFunction("OnVendingMachineCreation", "iffffff", modelid, x, y, z, rx, ry, rz);
 	return machineid;
 }
 
@@ -254,6 +257,7 @@ stock DestroyVendingMachine(machineid)
 	g_eVendingData[machineid][E_VENDING_RZ] = 0.0;
 
 	g_eVendingData[machineid][E_VENDING_TYPE] = 0;
+	CallLocalFunction("OnVendingMachineDestroyed", "d", machineid);
 	return 1;
 }
 
