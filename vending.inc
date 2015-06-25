@@ -35,7 +35,7 @@
 		Slice
 
 	Version:
-		2.0
+		2.1
 */
 
 //------------------------------------------------------------------------------
@@ -53,9 +53,14 @@
 
 #define OBJECT_TYPE_NORMAL			0
 #define OBJECT_TYPE_DYNAMIC			1
+
 #define MACHINE_SNACK 				956
+#define MACHINE_SNACK2 				1776
 #define MACHINE_SPRUNK 				955
+#define MACHINE_SPRUNK2				1775
 #define MACHINE_SODA				1302
+#define MACHINE_SODA2				1209
+#define MACHINE_BLACK				1977
 
 #define SODA_RADIUS					1.2
 #define SPRUNK_RADIUS				1.05
@@ -98,7 +103,8 @@ native IsValidVendingMachine(machineid);*/
 
 // Thanks to Slice:
 
-enum E_VENDING_MACHINE {
+enum E_VENDING_MACHINE
+{
 	e_Model,
 	e_Interior,
 	Float:e_PosX,
@@ -111,7 +117,8 @@ enum E_VENDING_MACHINE {
 	Float:e_FrontY
 }
 
-stock const Float:sc_VendingMachines[][E_VENDING_MACHINE] = {
+stock const Float:sc_VendingMachines[][E_VENDING_MACHINE] =
+{
 	{955, 0, -862.82, 1536.60, 21.98, 0.00, 0.00, 180.00, -862.84, 1537.60},
 	{956, 0, 2271.72, -76.46, 25.96, 0.00, 0.00, 0.00, 2271.72, -77.46},
 	{955, 0, 1277.83, 372.51, 18.95, 0.00, 0.00, 64.00, 1278.73, 372.07},
@@ -237,12 +244,20 @@ stock CreateVendingMachine(modelid, Float:x, Float:y, Float:z, Float:rx, Float:r
 
 	switch(modelid)
 	{
+		case MACHINE_SPRUNK2:
+			g_eVendingData[machineid][E_VENDING_RADIUS] = SPRUNK_RADIUS;
 		case MACHINE_SPRUNK:
 			g_eVendingData[machineid][E_VENDING_RADIUS] = SPRUNK_RADIUS;
 		case MACHINE_SNACK:
 			g_eVendingData[machineid][E_VENDING_RADIUS] = SNACK_RADIUS;
+		case MACHINE_SNACK2:
+			g_eVendingData[machineid][E_VENDING_RADIUS] = SNACK_RADIUS;
 		case MACHINE_SODA:
 			g_eVendingData[machineid][E_VENDING_RADIUS] = SODA_RADIUS;
+		case MACHINE_SODA2:
+			g_eVendingData[machineid][E_VENDING_RADIUS] = SODA_RADIUS;
+		case MACHINE_BLACK:
+			g_eVendingData[machineid][E_VENDING_RADIUS] = SPRUNK_RADIUS;
 		default:
 		{
 			printf("ERROR: Invalid vending object id! (Used ID: %i - Valid IDs: 955, 956 or 1302)", modelid);
@@ -302,23 +317,24 @@ stock SetVendingMachineColor(machineid, color)
 	if(!IsValidVendingMachine(machineid) || GetVendingMachineType(machineid) == MACHINE_SNACK)
 		return 0;
 
-	#if defined Streamer_IncludeFileVersion
-	if(GetVendingMachineType(machineid) == MACHINE_SODA) {
+	if(GetVendingMachineType(machineid) == MACHINE_SODA)
+	{
+		#if defined Streamer_IncludeFileVersion
 		SetDynamicObjectMaterial(g_eVendingData[machineid][E_VENDING_ID], 0, -1, "none", "none", color);
 		SetDynamicObjectMaterial(g_eVendingData[machineid][E_VENDING_ID], 1, -1, "none", "none", color);
-	}
-	else {
-		SetDynamicObjectMaterial(g_eVendingData[machineid][E_VENDING_ID], 0, -1, "none", "none", color);
-	}
-	#else
-	if(GetVendingMachineType(machineid) == MACHINE_SODA) {
+		#else
 		SetObjectMaterial(g_eVendingData[machineid][E_VENDING_ID], 0, -1, "none", "none", color);
 		SetObjectMaterial(g_eVendingData[machineid][E_VENDING_ID], 1, -1, "none", "none", color);
+		#endif
 	}
-	else {
+	else
+	{
+		#if defined Streamer_IncludeFileVersion
+		SetDynamicObjectMaterial(g_eVendingData[machineid][E_VENDING_ID], 0, -1, "none", "none", color);
+		#else
 		SetObjectMaterial(g_eVendingData[machineid][E_VENDING_ID], 0, -1, "none", "none", color);
+		#endif
 	}
-	#endif
 
 	g_eVendingData[machineid][E_VENDING_COLOR] = color;
 	return 1;
@@ -331,12 +347,12 @@ stock GetVendingMachineColor(machineid)
 
 //------------------------------------------------------------------------------
 
-stock GetVendingMachineObjectType(machineid)
+stock GetVendingMachineObjectType()
 {
-	   #if defined Streamer_IncludeFileVersion
-		return OBJECT_TYPE_DYNAMIC;
+	#if defined Streamer_IncludeFileVersion
+	return OBJECT_TYPE_DYNAMIC;
 	#else
-			return OBJECT_TYPE_NORMAL;
+	return OBJECT_TYPE_NORMAL;
 	#endif
 }
 
