@@ -35,10 +35,14 @@
 		Slice
 
 	Version:
-		2.1
+		2.2(Updated by Abagail)
 */
 
 //------------------------------------------------------------------------------
+
+#if !defined _samp_included
+	#tryinclude <a_samp>
+#endif
 
 #if defined _vendingm_included
 	#endinput
@@ -218,10 +222,13 @@ enum E_VENDING_DATA
 	Float:E_VENDING_RADIUS,
 	E_VENDING_COLOR,
 	E_VENDING_TYPE,
-	E_VENDING_ID
+	E_VENDING_ID,
+	STREAMER_TAG_AREA E_VENDING_AREA
 }
 static g_eVendingData[MAX_MACHINES][E_VENDING_DATA];
 
+//------------------------------------------------------------------------------
+static g_eLastDrink[MAX_PLAYERS] = 0;
 //------------------------------------------------------------------------------
 
 forward OnPlayerUseVendingMachine(playerid, machineid);
@@ -267,6 +274,7 @@ stock CreateVendingMachine(modelid, Float:x, Float:y, Float:z, Float:rx, Float:r
 
 	#if defined Streamer_IncludeFileVersion
 		g_eVendingData[machineid][E_VENDING_ID]	= CreateDynamicObject(modelid, x, y, z, rx, ry, rz);
+		g_eVendingData[machineid][E_VENDING_AREA] = STREAMER_TAG_AREA CreateDynamicRectangle(x, y, x+g_eVendingData[machineid][E_VENDING_RADIUS], y+g_eVendingData[machineid][E_VENDING_RADIUS]);
 	#else
 		g_eVendingData[machineid][E_VENDING_ID]	= CreateObject(modelid, x, y, z, rx, ry, rz, 300.0);
 	#endif
@@ -307,6 +315,7 @@ stock DestroyVendingMachine(machineid)
 	g_eVendingData[machineid][E_VENDING_RZ] = 0.0;
 
 	g_eVendingData[machineid][E_VENDING_TYPE] = 0;
+	g_eVendingData[machineid][E_VENDING_AREA] = -1;
 	return 1;
 }
 
@@ -448,6 +457,7 @@ stock GetVendingMachineObjectID(machineid)
 
 //------------------------------------------------------------------------------
 
+#if !defined Streamer_IncludeFileVersion
 GetXYInFrontOfVending(machineid, &Float:x, &Float:y, Float:distance)
 {
 	new Float:a, Float:z;
@@ -462,6 +472,18 @@ GetXYInFrontOfVending(machineid, &Float:x, &Float:y, Float:distance)
 }
 
 //------------------------------------------------------------------------------
+#else
+stock STREAMER_TAG_AREA GetVendingMachineDynamicArea(machineid)
+{
+	if(!IsValidVendingMachine(machineid))
+	{
+		return INVALID_MACHINE_ID;
+	}
+	
+	else return g_eVendingData[machineid][E_VENDING_AREA];
+}
+//------------------------------------------------------------------------------
+#endif
 
 public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 {
@@ -472,10 +494,15 @@ public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 			if(!IsValidVendingMachine(i))
 				continue;
 
+			#if defined Streamer_IncludeFileVersion
+			if(!IsPlayerInDynamicArea(playerid, g_eVendingData[i][E_VENDING_AREA]))
+			    continue;
+			#else
 			new Float:x, Float:y;
 			GetXYInFrontOfVending(i, x, y, 0.5);
 			if(!IsPlayerInRangeOfPoint(playerid, g_eVendingData[i][E_VENDING_RADIUS], x, y, g_eVendingData[i][E_VENDING_Z]))
 				continue;
+			#endif
 
 			SetPlayerFacingAngle(playerid, g_eVendingData[i][E_VENDING_RZ]);
 			if(OnPlayerUseVendingMachine(playerid, i) != 0)
@@ -483,7 +510,7 @@ public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 				ApplyAnimation(playerid, "VENDING", "VEND_USE", 10.0, 0, 0, 0, 0, 0, 1);
 				if(g_eVendingData[i][E_VENDING_TYPE] == MACHINE_SNACK) PlayerPlaySound(playerid, 42601, 0.0, 0.0, 0.0);
 				else PlayerPlaySound(playerid, 42600, 0.0, 0.0, 0.0);
-			
+
 				#if !defined NO_SPRUNK_ACTION
 				if(g_eVendingData[i][E_VENDING_TYPE] == MACHINE_SPRUNK) SetTimerEx("ven_SetPlayerAnimation", 2500, false, "i", playerid);
 				#endif
@@ -492,10 +519,10 @@ public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 		}
 	}
 	#if !defined NO_SPRUNK_ACTION
-	else if((newkeys & KEY_FIRE) && (GetPVarInt(playerid, "ven_lastDrink") < GetTickCount()) && (GetPlayerSpecialAction(playerid) == SPECIAL_ACTION_DRINK_SPRUNK))
+	else if((newkeys & KEY_FIRE) && g_eLastDrink[playerid] < GetTickCount() && (GetPlayerSpecialAction(playerid) == SPECIAL_ACTION_DRINK_SPRUNK))
 	{
 		OnPlayerDrinkSprunk(playerid);
-		SetPVarInt(playerid, "ven_lastDrink", GetTickCount() + 2350);
+		g_eLastDrink[playerid] = GetTickCount() + 2350;
 	}
 	#endif
 	#if defined inc_Ven_OnPlayerKeyStateChange
@@ -548,6 +575,28 @@ public OnPlayerConnect(playerid)
 #define OnPlayerConnect inc_Ven_OnPlayerConnect
 #if defined inc_Ven_OnPlayerConnect
 	forward inc_Ven_OnPlayerConnect(playerid);
+#endif
+
+//------------------------------------------------------------------------------
+
+public OnPlayerDisconnect(playerid, reason)
+{
+	g_eLastDrink[playerid] = 0;
+	#if defined inc_Ven_OnPlayerDisconnect
+		return inc_Ven_OnPlayerDisconnect(playerid);
+	#else
+		return 0;
+	#endif
+}
+#if defined _ALS_OnPlayerDisconnect
+	#undef OnPlayerDisconnect
+#else
+	#define _ALS_OnPlayerDisconnect
+#endif
+
+#define OnPlayerDisconnect inc_Ven_OnPlayerDisconnect
+#if defined inc_Ven_OnPlayerDisconnect
+	forward inc_Ven_OnPlayerDisconnect(playerid, reason);
 #endif
 
 //------------------------------------------------------------------------------
