@@ -1,22 +1,8 @@
-SA-MP Vending Machines
-=====================
+## Vending
 
-A SA-MP include that creates server-sided vending machines that gives you full control of the in-game machines. You can create machines everywhere you want.
+A SA-MP library to create server-sided vending machines giving you full control machines. You can create new machines anywhere.
 
-**This will automatically replace the single-player machines.** (since 1.6)
-
-Creating Machine
-================
-
-You can use vending creator filterscript to create and export vending machines.
-
-![](http://i58.tinypic.com/2ztd2cl.jpg)
-![](http://i61.tinypic.com/k996s5.jpg)
-![](http://i61.tinypic.com/2rc0f81.jpg)
-![](http://i57.tinypic.com/11gpwrk.jpg)
-
-Example code
-============
+### Example
 
 ```c
 new gVending;
@@ -26,10 +12,12 @@ main()
 	gVending = CreateVendingMachine(MACHINE_SPRUNK, 1755.348144, -2113.468750, 12.692808, 0.000000, 0.000000, 180.000000);
 }
 
+// Called when the player use the machine.
 public OnPlayerUseVendingMachine(playerid, machineid)
-{ // Called when the player use the machine.
+{
+	// Cancel the action if the player has no money.
 	if(GetPlayerMoney(playerid) < 1)
-	{// If the player has no money.
+	{
 		SendClientMessage(playerid, COLOR_ERROR, "* You don't have enough money.");
 		return 0;
 	}
@@ -48,9 +36,9 @@ public OnPlayerUseVendingMachine(playerid, machineid)
 	return 1;
 }
 
-
+// Called when the player drink from the can.
 public OnPlayerDrinkSprunk(playerid)
-{// Called when the player drink from the can.
+{
 	new Float:health;
 	GetPlayerHealth(playerid, health);
 
@@ -63,4 +51,10 @@ public OnPlayerDrinkSprunk(playerid)
 }
 ```
 
-Check wiki for full documentation.
+### Creating
+You can use the [vending creator](https://github.com/Wuzi/vending/blob/master/vendingcreator.pwn) to create and export vending machines.
+
+![](http://i58.tinypic.com/2ztd2cl.jpg)
+![](http://i61.tinypic.com/k996s5.jpg)
+![](http://i61.tinypic.com/2rc0f81.jpg)
+![](http://i57.tinypic.com/11gpwrk.jpg)
