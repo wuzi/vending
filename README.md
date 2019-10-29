@@ -1,5 +1,7 @@
 ## Vending
 
+![](http://i.imgur.com/mwWWn0s.jpg)
+
 A SA-MP library to create server-sided vending machines giving you full control machines. You can create new machines anywhere.
 
 ### Example
@@ -53,8 +55,3 @@ public OnPlayerDrinkSprunk(playerid)
 
 ### Creating
 You can use the [vending creator](https://github.com/Wuzi/vending/blob/master/vendingcreator.pwn) to create and export vending machines.
-
-![](http://i58.tinypic.com/2ztd2cl.jpg)
-![](http://i61.tinypic.com/k996s5.jpg)
-![](http://i61.tinypic.com/2rc0f81.jpg)
-![](http://i57.tinypic.com/11gpwrk.jpg)
